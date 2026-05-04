@@ -48,15 +48,13 @@ export async function POST(req: NextRequest) {
     const jobs = await fetchNLJobs()
     log.jobs_fetched = jobs.length
 
-    // Remove jobs older than 45 days (likely expired/filled)
-    const expiryDate = new Date(Date.now() - 45 * 86400000).toISOString()
-    await supabase.from('jobs').delete().lt('posted_at', expiryDate)
-
     if (jobs.length > 0) {
-      // Upsert on apply_url — deduplicates real listings across runs
+      // Replace all Adzuna jobs with fresh results on every run
+      await supabase.from('jobs').delete().eq('source', 'Adzuna')
+
       const { error: jobsErr, count: jobsCount } = await supabase
         .from('jobs')
-        .upsert(jobs, { onConflict: 'apply_url', ignoreDuplicates: false })
+        .insert(jobs)
         .select('id', { count: 'exact' })
       log.jobs_inserted = jobsCount ?? 0
       if (jobsErr) log.jobs_error = jobsErr.message
