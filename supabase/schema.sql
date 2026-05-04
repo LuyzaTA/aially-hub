@@ -121,8 +121,9 @@ CREATE POLICY "anon_insert_jobs"       ON jobs          FOR INSERT WITH CHECK (t
 CREATE POLICY "anon_insert_startups"   ON startups      FOR INSERT WITH CHECK (true);
 CREATE POLICY "anon_insert_ingest_log" ON ingestion_log FOR INSERT WITH CHECK (true);
 
--- Allow anon deletes (for job refresh)
+-- Allow anon deletes (for job expiry cleanup)
 CREATE POLICY "anon_delete_jobs"       ON jobs          FOR DELETE USING (true);
 
--- Allow upserts (UPDATE) for articles
+-- Allow upserts (UPDATE) for articles and jobs
 CREATE POLICY "anon_update_articles"   ON articles      FOR UPDATE USING (true);
+CREATE POLICY "anon_update_jobs"       ON jobs          FOR UPDATE USING (true);
