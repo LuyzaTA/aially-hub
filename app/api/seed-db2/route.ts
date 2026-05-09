@@ -94,8 +94,33 @@ const RELEASES = [
   },
 ]
 
+function isTableMissing(msg: string | undefined): boolean {
+  if (!msg) return false
+  const lower = msg.toLowerCase()
+  return (
+    lower.includes('does not exist') ||
+    lower.includes('relation') ||
+    lower.includes('undefined table') ||
+    lower.includes('42p01') ||
+    lower.includes('pgrst200')
+  )
+}
+
 export async function POST() {
   const supabase = createServiceClient()
+
+  // Probe the table first so we can give a clear error if it hasn't been created yet.
+  const { error: probeError } = await supabase
+    .from('db2_releases')
+    .select('id')
+    .limit(1)
+
+  if (probeError && isTableMissing(probeError.message)) {
+    return NextResponse.json(
+      { ok: false, tableMissing: true, error: probeError.message },
+      { status: 422 },
+    )
+  }
 
   const { error, count } = await supabase
     .from('db2_releases')
@@ -103,7 +128,10 @@ export async function POST() {
     .select('id', { count: 'exact' })
 
   if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    return NextResponse.json(
+      { ok: false, tableMissing: isTableMissing(error.message), error: error.message },
+      { status: 500 },
+    )
   }
 
   return NextResponse.json({ ok: true, upserted: count })
