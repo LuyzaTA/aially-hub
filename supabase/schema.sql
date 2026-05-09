@@ -58,6 +58,20 @@ CREATE TABLE IF NOT EXISTS startups (
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- DB2 LUW release & version intelligence
+CREATE TABLE IF NOT EXISTS db2_releases (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  version      TEXT NOT NULL,
+  release_type TEXT NOT NULL CHECK (release_type IN ('release', 'fixpack', 'announcement', 'security')),
+  title        TEXT NOT NULL,
+  summary      TEXT,
+  release_date TIMESTAMPTZ,
+  url          TEXT UNIQUE,
+  features     TEXT[] DEFAULT '{}',
+  platforms    TEXT[] DEFAULT '{}',
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Ingestion log
 CREATE TABLE IF NOT EXISTS ingestion_log (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -76,6 +90,8 @@ CREATE INDEX IF NOT EXISTS jobs_posted_idx         ON jobs (posted_at DESC);
 CREATE INDEX IF NOT EXISTS jobs_remote_idx         ON jobs (is_remote);
 CREATE INDEX IF NOT EXISTS jobs_seniority_idx      ON jobs (seniority);
 CREATE INDEX IF NOT EXISTS startups_stage_idx      ON startups (stage);
+CREATE INDEX IF NOT EXISTS db2_releases_date_idx   ON db2_releases (release_date DESC);
+CREATE INDEX IF NOT EXISTS db2_releases_type_idx   ON db2_releases (release_type);
 CREATE INDEX IF NOT EXISTS ingestion_log_ran_idx   ON ingestion_log (ran_at DESC);
 
 -- ============================================================
@@ -85,6 +101,7 @@ CREATE INDEX IF NOT EXISTS ingestion_log_ran_idx   ON ingestion_log (ran_at DESC
 ALTER TABLE articles      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE jobs          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE startups      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE db2_releases  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ingestion_log ENABLE ROW LEVEL SECURITY;
 
 -- Add country column to startups if it doesn't exist yet
@@ -107,6 +124,9 @@ DROP POLICY IF EXISTS "anon_insert_jobs"        ON jobs;
 DROP POLICY IF EXISTS "anon_insert_startups"    ON startups;
 DROP POLICY IF EXISTS "anon_insert_ingest_log"  ON ingestion_log;
 DROP POLICY IF EXISTS "anon_delete_jobs"        ON jobs;
+DROP POLICY IF EXISTS "public_read_db2"         ON db2_releases;
+DROP POLICY IF EXISTS "anon_insert_db2"         ON db2_releases;
+DROP POLICY IF EXISTS "anon_update_db2"         ON db2_releases;
 DROP POLICY IF EXISTS "anon_update_articles"    ON articles;
 
 -- Public read
@@ -123,6 +143,11 @@ CREATE POLICY "anon_insert_ingest_log" ON ingestion_log FOR INSERT WITH CHECK (t
 
 -- Allow anon deletes (for job expiry cleanup)
 CREATE POLICY "anon_delete_jobs"       ON jobs          FOR DELETE USING (true);
+
+-- DB2 releases
+CREATE POLICY "public_read_db2"        ON db2_releases  FOR SELECT USING (true);
+CREATE POLICY "anon_insert_db2"        ON db2_releases  FOR INSERT WITH CHECK (true);
+CREATE POLICY "anon_update_db2"        ON db2_releases  FOR UPDATE USING (true);
 
 -- Allow upserts (UPDATE) for articles and jobs
 CREATE POLICY "anon_update_articles"   ON articles      FOR UPDATE USING (true);

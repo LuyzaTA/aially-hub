@@ -87,3 +87,16 @@ export interface TopCompany {
   city: string
   sector: string
 }
+
+export interface Db2Release {
+  id: string
+  version: string
+  release_type: 'release' | 'fixpack' | 'announcement' | 'security'
+  title: string
+  summary: string | null
+  release_date: string | null
+  url: string | null
+  features: string[]
+  platforms: string[]
+  created_at: string
+}
