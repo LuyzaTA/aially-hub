@@ -3,19 +3,22 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Newspaper, Briefcase,
   Rocket, BarChart2, RefreshCw, Zap, Database,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/',         label: 'Overview',  icon: LayoutDashboard },
-  { href: '/news',     label: 'News Feed', icon: Newspaper },
-  { href: '/jobs',     label: 'NL Jobs',   icon: Briefcase },
-  { href: '/startups', label: 'Startups',  icon: Rocket },
-  { href: '/market',   label: 'Market',    icon: BarChart2 },
-  { href: '/db2',      label: 'DB2 LUW',   icon: Database },
+  { href: '/',         label: 'Overview',  icon: LayoutDashboard, color: '#6366F1' },
+  { href: '/news',     label: 'News Feed', icon: Newspaper,       color: '#22D3EE' },
+  { href: '/jobs',     label: 'NL Jobs',   icon: Briefcase,       color: '#22C55E' },
+  { href: '/startups', label: 'Startups',  icon: Rocket,          color: '#F97316' },
+  { href: '/market',   label: 'Market',    icon: BarChart2,       color: '#A855F7' },
+  { href: '/db2',      label: 'DB2 LUW',   icon: Database,        color: '#00CFFF' },
 ]
+
+const BARS = [32, 55, 40, 70, 52, 80, 62, 88, 68, 95]
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -41,82 +44,214 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[240px] bg-[#100E24] border-r border-white/[0.06] flex flex-col z-40">
+    <aside
+      className="fixed left-0 top-0 h-full w-[240px] flex flex-col z-40"
+      style={{
+        background: 'rgba(7, 6, 26, 0.92)',
+        backdropFilter: 'blur(28px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      {/* Left edge glow line */}
+      <div
+        className="absolute left-0 top-0 w-px h-full pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, transparent, rgba(99,102,241,0.6) 30%, rgba(139,92,246,0.4) 60%, transparent)',
+        }}
+      />
 
       {/* Logo */}
-      <div className="px-6 pt-7 pb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30">
-            <Zap className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
+      <div className="px-5 pt-7 pb-5">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative"
+            style={{
+              background: 'linear-gradient(135deg,#6366F1,#8B5CF6)',
+              boxShadow: '0 0 20px rgba(99,102,241,0.45)',
+            }}
+          >
+            <Zap className="w-[17px] h-[17px] text-white" strokeWidth={2.5} />
+            {/* Shimmer on logo */}
+            <div
+              className="absolute inset-0 rounded-xl overflow-hidden"
+              style={{ mixBlendMode: 'overlay' }}
+            >
+              <div className="absolute inset-0 shimmer" />
+            </div>
           </div>
           <div>
-            <div className="text-[#EEEEFF] font-bold text-[15px] tracking-tight">AIAlly - Hub</div>
+            <div
+              className="font-bold text-[14px] tracking-tight"
+              style={{
+                background: 'linear-gradient(90deg,#F0EFFF,#A8A6CC)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              AIAlly Hub
+            </div>
+            <div className="text-[9px] font-mono text-[#3A3860] tracking-[0.18em] uppercase mt-px">
+              AI Platform
+            </div>
           </div>
-        </div>
+        </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3">
-        <div className="text-[#6B6990] text-[10px] tracking-[0.18em] uppercase px-3 pb-2 mb-1">Menu</div>
+      {/* Divider */}
+      <div className="mx-5 mb-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
+
+      {/* Nav section label */}
+      <div className="px-5 mb-1">
+        <span className="text-[9px] font-mono tracking-[0.2em] text-[#3A3860] uppercase">Navigation</span>
+      </div>
+
+      {/* Nav items */}
+      <nav className="flex-1 px-3 overflow-y-auto">
         <div className="space-y-0.5">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, icon: Icon, color }) => {
             const active = pathname === href || (href !== '/' && pathname.startsWith(href))
             return (
               <Link
                 key={href}
                 href={href}
-                className={`relative flex items-center gap-3 px-3 py-[10px] rounded-xl transition-all duration-150 ${
-                  active ? 'text-white' : 'text-[#6B6990] hover:text-[#A8A6CC] hover:bg-white/[0.04]'
-                }`}
+                className="relative flex items-center gap-3 px-3 py-[9px] rounded-xl transition-all duration-200 group"
+                style={{
+                  color: active ? '#F0EFFF' : '#5A5880',
+                }}
               >
+                {/* Active background */}
                 {active && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] shadow-lg shadow-indigo-500/25" />
+                  <motion.div
+                    layoutId="nav-active"
+                    className="absolute inset-0 rounded-xl"
+                    style={{
+                      background: `linear-gradient(135deg, ${color}18, ${color}0a)`,
+                      border: `1px solid ${color}25`,
+                      boxShadow: `0 0 16px ${color}15`,
+                    }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
                 )}
-                <Icon
-                  className="relative z-10 flex-shrink-0 w-[18px] h-[18px]"
-                  strokeWidth={active ? 2.5 : 1.8}
-                />
-                <span className="relative z-10 text-[13px] font-medium">{label}</span>
+
+                {/* Hover background */}
+                {!active && (
+                  <div
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: 'rgba(255,255,255,0.03)' }}
+                  />
+                )}
+
+                {/* Active left indicator */}
+                {active && (
+                  <div
+                    className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full"
+                    style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+                  />
+                )}
+
+                {/* Icon */}
+                <div
+                  className="relative z-10 flex-shrink-0 transition-all duration-200"
+                  style={{
+                    color: active ? color : undefined,
+                    filter: active ? `drop-shadow(0 0 6px ${color}80)` : undefined,
+                  }}
+                >
+                  <Icon
+                    className="w-[17px] h-[17px] transition-all group-hover:scale-110"
+                    strokeWidth={active ? 2.2 : 1.7}
+                  />
+                </div>
+
+                <span className="relative z-10 text-[13px] font-medium tracking-tight transition-colors duration-200 group-hover:text-[#A8A6CC]">
+                  {label}
+                </span>
+
+                {/* Active dot */}
+                {active && (
+                  <div className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+                )}
               </Link>
             )
           })}
         </div>
       </nav>
 
-      {/* Stats mini card */}
-      <div className="mx-3 mb-3 p-4 rounded-2xl bg-gradient-to-br from-[#17153A] to-[#1D1B42] border border-white/[0.07]">
-        <div className="text-[#6B6990] text-[10px] tracking-wide mb-0.5">Intelligence Feed</div>
-        <div className="text-[#EEEEFF] text-[20px] font-bold leading-tight">24h Cycle</div>
-        <div className="text-[#22C55E] text-[11px] mt-0.5 font-medium">↑ Auto-sync active</div>
-        <div className="mt-3 h-7 flex items-end gap-[3px]">
-          {[30, 52, 41, 67, 55, 78, 61, 85, 70, 90].map((h, i) => (
-            <div
-              key={i}
-              className="flex-1 rounded-sm"
-              style={{
-                height: `${h}%`,
-                background: 'linear-gradient(to top, rgba(99,102,241,0.8), rgba(139,92,246,0.3))',
-              }}
-            />
-          ))}
+      {/* ── Activity mini-card ─────────────────────────────────────── */}
+      <div className="mx-3 mb-3">
+        <div
+          className="rounded-2xl p-4 relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.06))',
+            border: '1px solid rgba(99,102,241,0.18)',
+          }}
+        >
+          {/* Shimmer overlay */}
+          <div className="absolute inset-0 shimmer pointer-events-none" style={{ opacity: 0.5 }} />
+
+          <div className="relative">
+            <div className="text-[9px] font-mono text-[#5A5880] uppercase tracking-[0.2em] mb-0.5">
+              Intelligence Feed
+            </div>
+            <div className="text-[#F0EFFF] text-[20px] font-black leading-tight">24h Cycle</div>
+            <div className="text-[11px] text-[#22C55E] font-semibold mt-0.5 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] pulse-dot" />
+              Auto-sync active
+            </div>
+            <div className="mt-3 h-7 flex items-end gap-[2.5px]">
+              {BARS.map((h, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-sm"
+                  style={{
+                    height: `${h}%`,
+                    background: `linear-gradient(to top, rgba(99,102,241,${0.7 + i * 0.02}), rgba(139,92,246,0.25))`,
+                    boxShadow: h > 75 ? '0 0 4px rgba(99,102,241,0.5)' : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Sync button */}
-      <div className="px-3 pb-5 border-t border-white/[0.06] pt-3">
+      {/* ── Sync button ────────────────────────────────────────────── */}
+      <div className="px-3 pb-5 border-t border-[rgba(255,255,255,0.05)] pt-3">
         <button
           onClick={handleSync}
           disabled={syncing}
-          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 ${
-            status === 'ok'
-              ? 'text-[#22C55E] bg-[#22C55E]/10'
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 group"
+          style={{
+            color: status === 'ok' ? '#22C55E' : status === 'err' ? '#EF4444' : '#5A5880',
+            background: status === 'ok'
+              ? 'rgba(34,197,94,0.08)'
               : status === 'err'
-              ? 'text-[#EF4444] bg-[#EF4444]/10'
-              : 'text-[#6B6990] hover:text-[#A8A6CC] hover:bg-white/[0.04]'
-          }`}
+              ? 'rgba(239,68,68,0.08)'
+              : 'transparent',
+            border: status === 'ok'
+              ? '1px solid rgba(34,197,94,0.2)'
+              : status === 'err'
+              ? '1px solid rgba(239,68,68,0.2)'
+              : '1px solid transparent',
+          }}
         >
-          <RefreshCw className={`w-3.5 h-3.5 flex-shrink-0 ${syncing ? 'animate-spin' : ''}`} />
-          {syncing ? 'Syncing...' : status === 'ok' ? 'Synced ✓' : status === 'err' ? 'Failed ✗' : 'Sync Data'}
+          <RefreshCw
+            className={`w-3.5 h-3.5 flex-shrink-0 transition-colors group-hover:text-[#A8A6CC] ${syncing ? 'animate-spin' : ''}`}
+          />
+          <span className="transition-colors group-hover:text-[#A8A6CC]">
+            {syncing ? 'Syncing...' : status === 'ok' ? 'Synced ✓' : status === 'err' ? 'Failed ✗' : 'Sync Data'}
+          </span>
+          {!syncing && status === 'idle' && (
+            <AnimatePresence>
+              <motion.div
+                className="ml-auto w-1 h-1 rounded-full bg-[#6366F1]"
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </AnimatePresence>
+          )}
         </button>
       </div>
     </aside>

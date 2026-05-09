@@ -1,47 +1,90 @@
 'use client'
 
-import { Search, Bell, Moon, RefreshCw } from 'lucide-react'
+import { Search, Bell } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export function TopBar() {
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-4 px-8 py-3.5 bg-[#0C0B1F]/80 backdrop-blur-xl border-b border-white/[0.06]">
+    <header
+      className="sticky top-0 z-30 flex items-center gap-4 px-8 py-3"
+      style={{
+        background: 'rgba(7, 6, 26, 0.7)',
+        backdropFilter: 'blur(24px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+      }}
+    >
+      {/* Subtle top edge glow */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(99,102,241,0.3)] to-transparent pointer-events-none" />
 
       {/* Search */}
       <div className="relative flex-1 max-w-sm">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6990]" />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#3A3860]" />
         <input
           type="text"
-          placeholder="Search anything..."
-          className="w-full bg-[#17153A] border border-white/[0.07] rounded-full pl-10 pr-14 py-2 text-[13px] text-[#EEEEFF] placeholder:text-[#6B6990] focus:outline-none focus:border-[#6366F1]/50 transition-colors"
+          placeholder="Search intelligence..."
+          className="w-full rounded-full pl-10 pr-14 py-2 text-[13px] text-[#F0EFFF] placeholder:text-[#3A3860] focus:outline-none transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
+          onFocus={e => {
+            e.currentTarget.style.border = '1px solid rgba(99,102,241,0.4)'
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.08)'
+          }}
+          onBlur={e => {
+            e.currentTarget.style.border = '1px solid rgba(255,255,255,0.07)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
         />
-        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[#6B6990] bg-[#211F4A] px-1.5 py-0.5 rounded-md select-none">
+        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[9px] text-[#3A3860] bg-[rgba(255,255,255,0.05)] px-1.5 py-0.5 rounded-md select-none border border-[rgba(255,255,255,0.07)]">
           ⌘K
         </span>
       </div>
 
       {/* Right controls */}
       <div className="flex items-center gap-2 ml-auto">
-        <button className="w-9 h-9 rounded-full bg-[#17153A] border border-white/[0.07] flex items-center justify-center text-[#6B6990] hover:text-[#EEEEFF] transition-colors">
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        {/* Notification bell */}
+        <motion.button
+          whileHover={{ scale: 1.07 }}
+          whileTap={{ scale: 0.94 }}
+          className="relative w-8 h-8 rounded-full flex items-center justify-center text-[#5A5880] hover:text-[#F0EFFF] transition-colors"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
+        >
+          <Bell className="w-3.5 h-3.5" />
+          <span
+            className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full border border-[#07061A]"
+            style={{ background: '#EF4444', boxShadow: '0 0 6px rgba(239,68,68,0.7)' }}
+          />
+        </motion.button>
 
-        <button className="relative w-9 h-9 rounded-full bg-[#17153A] border border-white/[0.07] flex items-center justify-center text-[#6B6990] hover:text-[#EEEEFF] transition-colors">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-[#0C0B1F]" />
-        </button>
+        {/* Divider */}
+        <div className="w-px h-5 bg-[rgba(255,255,255,0.07)] mx-1" />
 
-        <button className="w-9 h-9 rounded-full bg-[#17153A] border border-white/[0.07] flex items-center justify-center text-[#6B6990] hover:text-[#EEEEFF] transition-colors">
-          <Moon className="w-4 h-4" />
-        </button>
-
-        <div className="flex items-center gap-2.5 pl-3 ml-1 border-l border-white/[0.07]">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6366F1] to-[#EC4899] flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
-            AI
+        {/* User avatar */}
+        <motion.div
+          whileHover={{ scale: 1.04 }}
+          className="flex items-center gap-2.5 cursor-pointer group"
+        >
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-black flex-shrink-0"
+            style={{
+              background: 'linear-gradient(135deg,#6366F1,#EC4899)',
+              boxShadow: '0 0 14px rgba(99,102,241,0.4)',
+            }}
+          >
+            LA
           </div>
           <div className="hidden sm:block">
-            <div className="text-[12px] font-semibold text-[#EEEEFF] leading-none">Luyza Alexandre</div>
+            <div className="text-[12px] font-semibold text-[#F0EFFF] leading-none group-hover:text-white transition-colors">
+              Luyza
+            </div>
+            <div className="text-[9px] font-mono text-[#3A3860] mt-px">Admin</div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </header>
   )
