@@ -3,6 +3,7 @@ import { formatDate } from '@/lib/utils'
 import { JobCard } from '@/components/cards/JobCard'
 import type { Db2Release } from '@/types'
 import { ShieldAlert, Package, Wrench, Megaphone, ExternalLink, Database } from 'lucide-react'
+import { SeedReleasesButton } from '@/components/db2/SeedReleasesButton'
 
 export const revalidate = 3600
 
@@ -145,10 +146,8 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
             <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-8 text-center">
               <Database className="w-8 h-8 text-[#3D3B60] mx-auto mb-3" />
               <div className="text-[#6B6990] text-[13px] mb-1">No release data yet</div>
-              <p className="text-[#3D3B60] text-[11px]">
-                Run the seed SQL in Supabase SQL Editor:<br />
-                <code className="text-[#4DB8FF]">supabase/seed_db2.sql</code>
-              </p>
+              <p className="text-[#3D3B60] text-[11px]">Click the button to load IBM Db2 release history</p>
+              <SeedReleasesButton />
             </div>
           ) : (
             <div className="space-y-3">
