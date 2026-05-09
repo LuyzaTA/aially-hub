@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { formatSalary, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { JobCard } from '@/components/cards/JobCard'
 import type { Db2Release } from '@/types'
 import { ShieldAlert, Package, Wrench, Megaphone, ExternalLink, Database } from 'lucide-react'
@@ -58,7 +58,7 @@ export default async function Db2Page() {
     supabase
       .from('jobs')
       .select('*', { count: 'exact' })
-      .or('title.ilike.%DB2%,title.ilike.%Db2%,skills.cs.{DB2},description.ilike.%DB2%,description.ilike.%Db2%')
+      .or('title.ilike.%DB2%,skills.cs.{DB2}')
       .order('posted_at', { ascending: false }),
   ])
 
