@@ -9,6 +9,8 @@ const SEARCH_ROLES = [
   'MLOps engineer',
   'data scientist',
   'data platform engineer',
+  'db2',
+  'IBM Db2',
   'DB2 DBA',
   'database administrator DB2',
 ]
@@ -45,9 +47,14 @@ async function fetchFromAdzuna(
       const data = await res.json()
 
       for (const job of data.results ?? []) {
-        const applyUrl: string | null = job.redirect_url ?? null
+        // redirect_url is Adzuna's position-specific tracking link (preferred).
+        // Fall back to the canonical Adzuna detail page so there is always a
+        // job-level URL, never a company homepage.
+        const applyUrl: string =
+          job.redirect_url ??
+          (job.id ? `https://www.adzuna.nl/jobs/details/${job.id}` : null) ??
+          ''
 
-        // Skip if no direct link or already seen
         if (!applyUrl || seen.has(applyUrl)) continue
         seen.add(applyUrl)
 
@@ -61,7 +68,7 @@ async function fetchFromAdzuna(
           currency: 'EUR',
           description: job.description?.slice(0, 500) ?? null,
           skills: extractSkills(job.description ?? '', job.title ?? ''),
-          apply_url: applyUrl,
+          apply_url: applyUrl || null,
           source: 'Adzuna',
           posted_at: job.created ?? new Date().toISOString(),
           is_remote:
@@ -107,5 +114,5 @@ function extractSkills(description: string, title: string): string[] {
   return SKILL_KEYWORDS
     .filter(skill => text.includes(skill))
     .slice(0, 6)
-    .map(s => s.toUpperCase().replace('IBMDB2', 'IBM DB2'))
+    .map(s => (s === 'ibm db2' ? 'DB2' : s.toUpperCase()))
 }

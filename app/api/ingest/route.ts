@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
     log.jobs_fetched = jobs.length
 
     if (jobs.length > 0) {
-      // Replace all Adzuna jobs with fresh results on every run
-      await supabase.from('jobs').delete().eq('source', 'Adzuna')
+      // Wipe all jobs — every listing comes from Adzuna, no manual data to preserve
+      await supabase.from('jobs').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
       const { error: jobsErr, count: jobsCount } = await supabase
         .from('jobs')
