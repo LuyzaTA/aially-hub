@@ -9,13 +9,12 @@ import {
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/',          label: 'Overview',   icon: LayoutDashboard },
-  { href: '/news',      label: 'News Feed',  icon: Newspaper },
-  { href: '/jobs',      label: 'NL Jobs',    icon: Briefcase },
-  { href: '/startups',  label: 'Startups',   icon: Rocket },
-  { href: '/market',    label: 'Market',     icon: BarChart2 },
-  { href: '/db2',       label: 'DB2 Intel',  icon: Database },
-  { href: '/db2-jobs',  label: 'DB2 Jobs',   icon: Briefcase },
+  { href: '/',         label: 'Overview',  icon: LayoutDashboard },
+  { href: '/news',     label: 'News Feed', icon: Newspaper },
+  { href: '/jobs',     label: 'NL Jobs',   icon: Briefcase },
+  { href: '/startups', label: 'Startups',  icon: Rocket },
+  { href: '/market',   label: 'Market',    icon: BarChart2 },
+  { href: '/db2',      label: 'DB2 LUW',   icon: Database },
 ]
 
 export function Sidebar() {
