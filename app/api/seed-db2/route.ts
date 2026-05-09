@@ -102,7 +102,9 @@ function isTableMissing(msg: string | undefined): boolean {
     lower.includes('relation') ||
     lower.includes('undefined table') ||
     lower.includes('42p01') ||
-    lower.includes('pgrst200')
+    lower.includes('pgrst200') ||
+    lower.includes('schema cache') ||
+    lower.includes('could not find the table')
   )
 }
 
