@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/utils'
-import { JobCard } from '@/components/cards/JobCard'
 import type { Db2Release } from '@/types'
-import { ShieldAlert, Package, Wrench, Megaphone, ExternalLink, Database } from 'lucide-react'
+import { ShieldAlert, Package, Wrench, Megaphone, ExternalLink, Database, Briefcase } from 'lucide-react'
+import Link from 'next/link'
 
 export const revalidate = 3600
 
@@ -47,20 +47,15 @@ const TYPE_META: Record<Db2Release['release_type'], { label: string; color: stri
 export default async function Db2Page() {
   const supabase = await createClient()
 
-  const [
-    { data: releases },
-    { data: db2Jobs, count: db2Count },
-  ] = await Promise.all([
-    supabase
-      .from('db2_releases')
-      .select('*')
-      .order('release_date', { ascending: false }),
-    supabase
-      .from('jobs')
-      .select('*', { count: 'exact' })
-      .or('title.ilike.%DB2%,skills.cs.{DB2}')
-      .order('posted_at', { ascending: false }),
-  ])
+  const { data: releases } = await supabase
+    .from('db2_releases')
+    .select('*')
+    .order('release_date', { ascending: false })
+
+  const { count: db2Count } = await supabase
+    .from('jobs')
+    .select('*', { count: 'exact', head: true })
+    .or('title.ilike.%DB2%,skills.cs.{DB2}')
 
   const latestFP = releases?.find(r => r.release_type === 'fixpack')
   const latestRelease = releases?.find(r => r.release_type === 'release')
@@ -94,11 +89,13 @@ export default async function Db2Page() {
             {latestFP?.release_date ? formatDate(latestFP.release_date) : 'N/A'}
           </div>
         </div>
-        <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-4">
+        <Link href="/db2-jobs" className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-4 hover:border-[#006699]/50 transition-colors group block">
           <div className="text-[#6B6990] text-[10px] tracking-wide uppercase mb-1">Open Positions</div>
           <div className="text-[#EEEEFF] text-[22px] font-bold leading-tight">{db2Count ?? 0}</div>
-          <div className="text-[#6B6990] text-[11px] mt-0.5">Netherlands</div>
-        </div>
+          <div className="text-[#4DB8FF] text-[11px] mt-0.5 group-hover:underline flex items-center gap-1">
+            <Briefcase className="w-3 h-3" /> View all jobs →
+          </div>
+        </Link>
         <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-4">
           <div className="text-[#6B6990] text-[10px] tracking-wide uppercase mb-1">Platforms</div>
           <div className="text-[#EEEEFF] text-[22px] font-bold leading-tight">4</div>
@@ -248,39 +245,6 @@ export default async function Db2Page() {
         </div>
       </div>
 
-      {/* Open DB2 positions */}
-      <div>
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#006699]/20 border border-[#006699]/40 flex items-center justify-center flex-shrink-0">
-              <span className="text-[#4DB8FF] text-[11px] font-bold">DB2</span>
-            </div>
-            <div>
-              <h2 className="text-[#EEEEFF] font-bold text-[16px] leading-none">Open DB2 Positions</h2>
-              <p className="text-[#6B6990] text-[11px] mt-0.5">
-                {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Netherlands · Direct apply links
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {(db2Jobs?.length ?? 0) === 0 ? (
-          <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-10 text-center">
-            <div className="text-[#6B6990] text-[13px] mb-1">No DB2 positions found</div>
-            <p className="text-[#3D3B60] text-[11px]">Click &quot;Sync Data&quot; in the sidebar to fetch the latest listings</p>
-          </div>
-        ) : (
-          <div className="p-[1px] rounded-2xl bg-gradient-to-r from-[#006699]/60 via-[#0099CC]/40 to-[#006699]/60">
-            <div className="rounded-2xl bg-[#0D0C22] p-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                {db2Jobs?.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
