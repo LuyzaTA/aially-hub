@@ -132,14 +132,17 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
         <div className="col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[#EEEEFF] font-bold text-[16px]">IBM Official Releases &amp; Bulletins</h2>
-            <a
-              href="https://www.ibm.com/support/pages/db2-linux-unix-and-windows-fix-pack-central"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[#4DB8FF] text-[12px] font-medium hover:underline"
-            >
-              IBM Support <ExternalLink className="w-3 h-3" />
-            </a>
+            <div className="flex items-center gap-2">
+              <SeedReleasesButton compact />
+              <a
+                href="https://www.ibm.com/support/pages/db2-linux-unix-and-windows-fix-pack-central"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[#4DB8FF] text-[12px] font-medium hover:underline"
+              >
+                IBM Support <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
 
           {(releases?.length ?? 0) === 0 ? (

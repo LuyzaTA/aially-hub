@@ -28,7 +28,7 @@ const STUDIO_URL =
 
 type State = 'idle' | 'loading' | 'ok' | 'err' | 'table_missing'
 
-export function SeedReleasesButton() {
+export function SeedReleasesButton({ compact = false }: { compact?: boolean }) {
   const [state, setState] = useState<State>('idle')
   const [errMsg, setErrMsg] = useState('')
   const [copied, setCopied] = useState(false)
@@ -168,6 +168,26 @@ export function SeedReleasesButton() {
           Retry
         </button>
       </div>
+    )
+  }
+
+  // ── Compact (header icon button) ─────────────────────────────────────
+  if (compact) {
+    return (
+      <button
+        onClick={seed}
+        disabled={state === 'loading' || state === 'ok'}
+        title={state === 'ok' ? 'Done — reloading' : state === 'loading' ? 'Seeding…' : 'Reload release data'}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all disabled:opacity-40"
+        style={{
+          background: state === 'ok' ? 'rgba(34,197,94,0.1)' : 'rgba(0,207,255,0.08)',
+          border: state === 'ok' ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(0,207,255,0.2)',
+          color: state === 'ok' ? '#22C55E' : '#00CFFF',
+        }}
+      >
+        <RefreshCw className={`w-3 h-3 ${state === 'loading' ? 'animate-spin' : ''}`} />
+        {state === 'loading' ? 'Loading…' : state === 'ok' ? 'Done' : 'Reload'}
+      </button>
     )
   }
 
