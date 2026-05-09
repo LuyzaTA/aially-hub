@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { fetchHackerNews, fetchDevTo, fetchNLJobs } from '@/lib/fetchers'
+import { sendDb2JobsAlert } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   // Optional: protect with a secret in production
@@ -61,6 +62,21 @@ export async function POST(req: NextRequest) {
     }
 
     log.jobs_source = process.env.ADZUNA_APP_ID ? 'adzuna' : 'none (configure ADZUNA_APP_ID)'
+
+    // --- DB2 alert email ---
+    if (jobs.length > 0) {
+      const db2Jobs = jobs.filter(
+        j =>
+          j.title?.toLowerCase().includes('db2') ||
+          (j.skills ?? []).some(s => s.toUpperCase() === 'DB2'),
+      )
+      if (db2Jobs.length > 0) {
+        await sendDb2JobsAlert(db2Jobs as unknown as import('@/types').Job[]).catch(() => {
+          log.email_error = 'DB2 alert failed (check RESEND_API_KEY)'
+        })
+        log.db2_alert_sent = db2Jobs.length
+      }
+    }
 
     // --- Log ingestion run ---
     await supabase.from('ingestion_log').insert({
