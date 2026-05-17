@@ -85,11 +85,11 @@ export default async function DashboardPage() {
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
       </div>
 
-      {/* ── Main grid: 2/3 + 1/3 ─────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-5">
+      {/* ── Main grid: 2/3 + 1/3 (stacked on mobile) ───────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Left col */}
-        <div className="col-span-2 space-y-5">
+        <div className="col-span-1 lg:col-span-2 space-y-5">
 
           {/* Featured article */}
           {featured ? (
@@ -178,7 +178,7 @@ export default async function DashboardPage() {
                   View all <ArrowRight className="w-3 h-3" />
                 </a>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {articles?.map((article) => (
                   <NewsCard key={article.id} article={article as Article} />
                 ))}

@@ -25,7 +25,7 @@ const floatAnim = (delay = 0, range = 8): MotionProps => ({
 
 export function HeroSection({ articleCount, jobCount, startupCount, db2Count }: HeroSectionProps) {
   return (
-    <section className="relative flex items-center min-h-[88vh] overflow-hidden -mx-8 -mt-8 px-10 pt-14 pb-16 xl:px-16">
+    <section className="relative flex items-center min-h-[70vh] lg:min-h-[88vh] overflow-hidden -mx-4 lg:-mx-8 -mt-8 px-6 lg:px-10 pt-10 lg:pt-14 pb-12 lg:pb-16 xl:px-16">
 
       {/* ── Ambient mesh gradients ─────────────────────────────────── */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -58,14 +58,14 @@ export function HeroSection({ articleCount, jobCount, startupCount, db2Count }: 
       <div className="relative z-10 flex-1 max-w-[620px]">
 
         {/* Status badge */}
-        <motion.div {...fadeUp(0.05)} className="flex items-center gap-3 mb-9">
+        <motion.div {...fadeUp(0.05)} className="flex items-center gap-2 lg:gap-3 mb-6 lg:mb-9 flex-wrap">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#6366F1]/10 border border-[#6366F1]/25">
             <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] pulse-dot" />
             <span className="text-[9px] font-mono tracking-[0.22em] text-[#6366F1] uppercase">
               Live Intelligence Feed
             </span>
           </div>
-          <span className="text-[9px] font-mono tracking-widest text-[#3A3860]">
+          <span className="hidden sm:block text-[9px] font-mono tracking-widest text-[#3A3860]">
             NL MARKET · 24H CYCLE
           </span>
         </motion.div>
@@ -73,9 +73,9 @@ export function HeroSection({ articleCount, jobCount, startupCount, db2Count }: 
         {/* Headline */}
         <motion.div {...fadeUp(0.15)}>
           <h1 className="font-black leading-[0.88] tracking-tighter text-[#F0EFFF] mb-4 select-none">
-            <span className="block text-[82px] xl:text-[96px]">AI</span>
+            <span className="block text-[54px] sm:text-[72px] lg:text-[82px] xl:text-[96px]">AI</span>
             <span
-              className="block text-[82px] xl:text-[96px]"
+              className="block text-[54px] sm:text-[72px] lg:text-[82px] xl:text-[96px]"
               style={{
                 background: 'linear-gradient(90deg,#6366F1 0%,#A78BFA 45%,#22D3EE 100%)',
                 backgroundClip: 'text',
@@ -85,41 +85,41 @@ export function HeroSection({ articleCount, jobCount, startupCount, db2Count }: 
             >
               ALLY
             </span>
-            <span className="block text-[82px] xl:text-[96px]">HUB</span>
+            <span className="block text-[54px] sm:text-[72px] lg:text-[82px] xl:text-[96px]">HUB</span>
           </h1>
         </motion.div>
 
         {/* Sub */}
-        <motion.p {...fadeUp(0.28)} className="text-[16px] text-[#5A5880] font-light leading-relaxed max-w-[440px] mb-10">
+        <motion.p {...fadeUp(0.28)} className="text-[14px] lg:text-[16px] text-[#5A5880] font-light leading-relaxed max-w-[440px] mb-8 lg:mb-10">
           Global intelligence for the{' '}
           <span className="text-[#A8A6CC]">AI & Data Engineering</span> economy.
-          <br />Netherlands market focus. Powered by live data.
+          <br className="hidden sm:block" />Netherlands market focus. Powered by live data.
         </motion.p>
 
         {/* CTAs */}
-        <motion.div {...fadeUp(0.38)} className="flex items-center gap-4 mb-14">
+        <motion.div {...fadeUp(0.38)} className="flex items-center gap-3 lg:gap-4 mb-10 lg:mb-14">
           <Link
             href="/news"
-            className="group flex items-center gap-2.5 px-6 py-3 rounded-2xl font-semibold text-[14px] text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="group flex items-center gap-2 lg:gap-2.5 px-4 lg:px-6 py-2.5 lg:py-3 rounded-2xl font-semibold text-[13px] lg:text-[14px] text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
             style={{
               background: 'linear-gradient(135deg,#6366F1,#8B5CF6)',
               boxShadow: '0 0 28px rgba(99,102,241,0.35), 0 4px 20px rgba(0,0,0,0.4)',
             }}
           >
-            <Zap className="w-4 h-4" strokeWidth={2.5} />
+            <Zap className="w-3.5 h-3.5 lg:w-4 lg:h-4" strokeWidth={2.5} />
             Enter Hub
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3 h-3 lg:w-3.5 lg:h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             href="/jobs"
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-[14px] text-[#A8A6CC] glass hover:text-[#F0EFFF] transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 lg:px-6 py-2.5 lg:py-3 rounded-2xl font-medium text-[13px] lg:text-[14px] text-[#A8A6CC] glass hover:text-[#F0EFFF] transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             NL Jobs ↗
           </Link>
         </motion.div>
 
         {/* Stats row */}
-        <motion.div {...fadeUp(0.5)} className="flex items-center gap-8">
+        <motion.div {...fadeUp(0.5)} className="flex items-center gap-5 lg:gap-8">
           {[
             { value: articleCount, label: 'Articles' },
             { value: jobCount,     label: 'NL Jobs'  },
@@ -133,10 +133,10 @@ export function HeroSection({ articleCount, jobCount, startupCount, db2Count }: 
               transition={{ delay: 0.55 + i * 0.07, duration: 0.5 }}
               className="text-center"
             >
-              <div className="text-[30px] font-black text-[#F0EFFF] tabular-nums leading-none">
+              <div className="text-[22px] lg:text-[30px] font-black text-[#F0EFFF] tabular-nums leading-none">
                 {value}
               </div>
-              <div className="text-[9px] font-mono text-[#5A5880] uppercase tracking-[0.18em] mt-1">
+              <div className="text-[8px] lg:text-[9px] font-mono text-[#5A5880] uppercase tracking-[0.15em] lg:tracking-[0.18em] mt-1">
                 {label}
               </div>
             </motion.div>
@@ -144,7 +144,7 @@ export function HeroSection({ articleCount, jobCount, startupCount, db2Count }: 
         </motion.div>
       </div>
 
-      {/* ── Right: Neural Orb + floating panels ───────────────────── */}
+      {/* ── Right: Neural Orb + floating panels (desktop only) ────── */}
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}

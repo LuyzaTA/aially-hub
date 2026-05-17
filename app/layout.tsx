@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Sidebar />
         <div
-          className="ml-[240px] min-h-screen flex flex-col"
+          className="lg:ml-[240px] min-h-screen flex flex-col pb-16 lg:pb-0"
           style={{
             background:
               'radial-gradient(ellipse 110% 60% at 60% -10%, rgba(99,102,241,0.13) 0%, transparent 65%), ' +
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         >
           <TopBar />
-          <main className="flex-1 p-8">
+          <main className="flex-1 p-4 lg:p-8">
             {children}
           </main>
         </div>
