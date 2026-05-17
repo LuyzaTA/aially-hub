@@ -126,19 +126,19 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
       </div>
 
       {/* Releases + Editions */}
-      <div className="grid grid-cols-3 gap-5 mb-7">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
 
         {/* Release timeline — left 2/3 */}
-        <div className="col-span-2">
-          <div className="flex items-center justify-between mb-4">
+        <div className="col-span-1 lg:col-span-2">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
             <h2 className="text-[#EEEEFF] font-bold text-[16px]">IBM Official Releases &amp; Bulletins</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <SeedReleasesButton compact />
               <a
                 href="https://www.ibm.com/support/pages/db2-linux-unix-and-windows-fix-pack-central"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[#4DB8FF] text-[12px] font-medium hover:underline"
+                className="flex items-center gap-1 text-[#4DB8FF] text-[12px] font-medium hover:underline whitespace-nowrap"
               >
                 IBM Support <ExternalLink className="w-3 h-3" />
               </a>
@@ -190,14 +190,19 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
                             )}
                           </div>
                         )}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="text-[#3D3B60] text-[11px]">
                               {release.release_date ? formatDate(release.release_date) : 'Date N/A'}
                             </span>
                             {release.platforms?.length > 0 && (
-                              <span className="text-[#3D3B60] text-[11px]">
+                              <span className="text-[#3D3B60] text-[11px] hidden sm:inline">
                                 {release.platforms.join(' · ')}
+                              </span>
+                            )}
+                            {release.platforms?.length > 0 && (
+                              <span className="text-[#3D3B60] text-[11px] sm:hidden">
+                                {release.platforms.slice(0, 2).join(' · ')}{release.platforms.length > 2 ? ' +more' : ''}
                               </span>
                             )}
                           </div>
@@ -206,7 +211,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
                               href={release.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`flex items-center gap-1 text-[11px] font-semibold ${meta.color} ${meta.bg} border ${meta.border} px-3 py-1 rounded-lg hover:opacity-80 transition-opacity`}
+                              className={`self-start sm:self-auto flex items-center gap-1 text-[11px] font-semibold ${meta.color} ${meta.bg} border ${meta.border} px-3 py-1 rounded-lg hover:opacity-80 transition-opacity`}
                             >
                               IBM Docs <ExternalLink className="w-3 h-3" />
                             </a>
@@ -271,7 +276,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
 
       {/* Open DB2 positions */}
       <div>
-        <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#006699]/20 border border-[#006699]/40 flex items-center justify-center flex-shrink-0">
               <span className="text-[#4DB8FF] text-[11px] font-bold">DB2</span>
@@ -285,13 +290,13 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
           </div>
 
           {/* Filters */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1">
+          <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1 flex-shrink-0">
               {SENIORITY_OPTIONS.map(({ value, label }) => (
                 <a
                   key={value}
                   href={`/db2?seniority=${value}${remoteOnly ? '&remote=true' : ''}`}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                     seniority === value
                       ? 'bg-gradient-to-r from-[#006699] to-[#0099CC] text-white shadow-lg shadow-cyan-500/20'
                       : 'text-[#6B6990] hover:text-[#A8A6CC]'
@@ -303,7 +308,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
             </div>
             <a
               href={`/db2?seniority=${seniority}&remote=${!remoteOnly}`}
-              className={`px-3 py-2 rounded-xl text-[11px] font-medium border transition-all ${
+              className={`px-3 py-2 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
                 remoteOnly
                   ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25'
                   : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
