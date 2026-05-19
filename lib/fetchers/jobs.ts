@@ -117,10 +117,15 @@ async function fetchFromAdzuna(
 
         seen.add(applyUrl)
 
+        const rawLocation = job.location?.display_name ?? 'Netherlands'
+        const location = /netherlands|nederland/i.test(rawLocation)
+          ? rawLocation
+          : `${rawLocation}, Netherlands`
+
         results.push({
           title: job.title,
           company: job.company?.display_name ?? 'Unknown',
-          location: job.location?.display_name ?? 'Netherlands',
+          location,
           job_type: inferJobType(job.contract_type, job.title),
           salary_min: job.salary_min != null ? Math.round(job.salary_min) : null,
           salary_max: job.salary_max != null ? Math.round(job.salary_max) : null,
@@ -181,10 +186,15 @@ async function fetchDB2FromCountries(
 
           seen.add(applyUrl)
 
+          const rawLoc = job.location?.display_name ?? country.fallbackLocation
+          const loc = rawLoc.toLowerCase().includes(country.fallbackLocation.toLowerCase())
+            ? rawLoc
+            : `${rawLoc}, ${country.fallbackLocation}`
+
           results.push({
             title: job.title,
             company: job.company?.display_name ?? 'Unknown',
-            location: job.location?.display_name ?? country.fallbackLocation,
+            location: loc,
             job_type: inferJobType(job.contract_type, job.title),
             salary_min: job.salary_min != null ? Math.round(job.salary_min) : null,
             salary_max: job.salary_max != null ? Math.round(job.salary_max) : null,
