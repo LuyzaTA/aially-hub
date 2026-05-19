@@ -129,6 +129,69 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
         </div>
       </div>
 
+      {/* Open DB2 positions */}
+      <div className="mb-7">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#006699]/20 border border-[#006699]/40 flex items-center justify-center flex-shrink-0">
+              <span className="text-[#4DB8FF] text-[11px] font-bold">DB2</span>
+            </div>
+            <div>
+              <h2 className="text-[#EEEEFF] font-bold text-[16px] leading-none">Open DB2 Positions</h2>
+              <p className="text-[#6B6990] text-[11px] mt-0.5">
+                {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Europe &amp; Brazil · Direct apply links
+              </p>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1 flex-shrink-0">
+              {SENIORITY_OPTIONS.map(({ value, label }) => (
+                <a
+                  key={value}
+                  href={`/db2?seniority=${value}${remoteOnly ? '&remote=true' : ''}`}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+                    seniority === value
+                      ? 'bg-gradient-to-r from-[#006699] to-[#0099CC] text-white shadow-lg shadow-cyan-500/20'
+                      : 'text-[#6B6990] hover:text-[#A8A6CC]'
+                  }`}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+            <a
+              href={`/db2?seniority=${seniority}&remote=${!remoteOnly}`}
+              className={`px-3 py-2 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
+                remoteOnly
+                  ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25'
+                  : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
+              }`}
+            >
+              {remoteOnly ? '✓ ' : ''}Remote only
+            </a>
+          </div>
+        </div>
+
+        {(db2Jobs?.length ?? 0) === 0 ? (
+          <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-10 text-center">
+            <div className="text-[#6B6990] text-[13px] mb-1">No DB2 positions found</div>
+            <p className="text-[#3D3B60] text-[11px]">Click <span className="text-[#4DB8FF]">Sync</span> in the sidebar to fetch the latest listings from Europe &amp; Brazil</p>
+          </div>
+        ) : (
+          <div className="p-[1px] rounded-2xl bg-gradient-to-r from-[#006699]/60 via-[#0099CC]/40 to-[#006699]/60">
+            <div className="rounded-2xl bg-[#0D0C22] p-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                {db2Jobs?.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Releases + Editions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
 
@@ -278,68 +341,6 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
         </div>
       </div>
 
-      {/* Open DB2 positions */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#006699]/20 border border-[#006699]/40 flex items-center justify-center flex-shrink-0">
-              <span className="text-[#4DB8FF] text-[11px] font-bold">DB2</span>
-            </div>
-            <div>
-              <h2 className="text-[#EEEEFF] font-bold text-[16px] leading-none">Open DB2 Positions</h2>
-              <p className="text-[#6B6990] text-[11px] mt-0.5">
-                {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Europe &amp; Brazil · Direct apply links
-              </p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-            <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1 flex-shrink-0">
-              {SENIORITY_OPTIONS.map(({ value, label }) => (
-                <a
-                  key={value}
-                  href={`/db2?seniority=${value}${remoteOnly ? '&remote=true' : ''}`}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-                    seniority === value
-                      ? 'bg-gradient-to-r from-[#006699] to-[#0099CC] text-white shadow-lg shadow-cyan-500/20'
-                      : 'text-[#6B6990] hover:text-[#A8A6CC]'
-                  }`}
-                >
-                  {label}
-                </a>
-              ))}
-            </div>
-            <a
-              href={`/db2?seniority=${seniority}&remote=${!remoteOnly}`}
-              className={`px-3 py-2 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
-                remoteOnly
-                  ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25'
-                  : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
-              }`}
-            >
-              {remoteOnly ? '✓ ' : ''}Remote only
-            </a>
-          </div>
-        </div>
-
-        {(db2Jobs?.length ?? 0) === 0 ? (
-          <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-10 text-center">
-            <div className="text-[#6B6990] text-[13px] mb-1">No DB2 positions found</div>
-            <p className="text-[#3D3B60] text-[11px]">Click <span className="text-[#4DB8FF]">Sync</span> in the sidebar to fetch the latest listings from Europe &amp; Brazil</p>
-          </div>
-        ) : (
-          <div className="p-[1px] rounded-2xl bg-gradient-to-r from-[#006699]/60 via-[#0099CC]/40 to-[#006699]/60">
-            <div className="rounded-2xl bg-[#0D0C22] p-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                {db2Jobs?.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
