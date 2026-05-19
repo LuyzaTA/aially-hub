@@ -27,6 +27,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   let req = supabase
     .from('jobs')
     .select('*')
+    .eq('source', 'Adzuna')
     .order('posted_at', { ascending: false })
     .limit(60)
 
@@ -38,6 +39,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const { count: totalCount } = await supabase
     .from('jobs')
     .select('*', { count: 'exact', head: true })
+    .eq('source', 'Adzuna')
 
   return (
     <div>

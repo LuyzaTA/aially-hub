@@ -94,7 +94,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
         <div>
           <h1 className="text-[22px] font-bold text-[#EEEEFF]">IBM Db2 LUW</h1>
           <p className="text-[#6B6990] text-[13px] mt-0.5">
-            Version intelligence · Editions · Open positions · Netherlands market
+            Version intelligence · Editions · Open positions · Europe &amp; Brazil
           </p>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
         <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-4">
           <div className="text-[#6B6990] text-[10px] tracking-wide uppercase mb-1">Open Positions</div>
           <div className="text-[#EEEEFF] text-[22px] font-bold leading-tight">{db2Count ?? 0}</div>
-          <div className="text-[#6B6990] text-[11px] mt-0.5">Netherlands</div>
+          <div className="text-[#6B6990] text-[11px] mt-0.5">Europe &amp; Brazil</div>
         </div>
         <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-4">
           <div className="text-[#6B6990] text-[10px] tracking-wide uppercase mb-1">Platforms</div>
@@ -284,7 +284,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
             <div>
               <h2 className="text-[#EEEEFF] font-bold text-[16px] leading-none">Open DB2 Positions</h2>
               <p className="text-[#6B6990] text-[11px] mt-0.5">
-                {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Netherlands · Direct apply links
+                {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Europe &amp; Brazil · Direct apply links
               </p>
             </div>
           </div>
@@ -322,7 +322,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
         {(db2Jobs?.length ?? 0) === 0 ? (
           <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-10 text-center">
             <div className="text-[#6B6990] text-[13px] mb-1">No DB2 positions found</div>
-            <p className="text-[#3D3B60] text-[11px]">Click &quot;Sync Data&quot; in the sidebar to fetch the latest listings</p>
+            <p className="text-[#3D3B60] text-[11px]">Click <span className="text-[#4DB8FF]">Sync</span> in the sidebar to fetch the latest listings from Europe &amp; Brazil</p>
           </div>
         ) : (
           <div className="p-[1px] rounded-2xl bg-gradient-to-r from-[#006699]/60 via-[#0099CC]/40 to-[#006699]/60">

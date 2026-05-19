@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { fetchHackerNews, fetchDevTo, fetchNLJobs } from '@/lib/fetchers'
+import { fetchHackerNews, fetchDevTo, fetchNLJobs, fetchDB2EuropeJobs } from '@/lib/fetchers'
 import { sendDb2JobsAlert } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
@@ -45,17 +45,27 @@ export async function POST(req: NextRequest) {
       if (devtoErr) log.devto_error = devtoErr.message
     }
 
-    // --- NL Jobs ---
-    const jobs = await fetchNLJobs()
-    log.jobs_fetched = jobs.length
+    // --- NL Jobs + DB2 Europe/Brazil ---
+    const [nlJobs, db2EuJobs] = await Promise.all([fetchNLJobs(), fetchDB2EuropeJobs()])
+    log.nl_jobs_fetched = nlJobs.length
+    log.db2_eu_jobs_fetched = db2EuJobs.length
 
-    if (jobs.length > 0) {
+    // Deduplicate across both batches by apply_url
+    const seenUrls = new Set<string>()
+    const allJobs = [...nlJobs, ...db2EuJobs].filter(j => {
+      if (!j.apply_url || seenUrls.has(j.apply_url)) return false
+      seenUrls.add(j.apply_url)
+      return true
+    })
+    log.jobs_fetched = allJobs.length
+
+    if (allJobs.length > 0) {
       // Wipe all jobs — every listing comes from Adzuna, no manual data to preserve
       await supabase.from('jobs').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
       const { error: jobsErr, count: jobsCount } = await supabase
         .from('jobs')
-        .insert(jobs)
+        .insert(allJobs)
         .select('id', { count: 'exact' })
       log.jobs_inserted = jobsCount ?? 0
       if (jobsErr) log.jobs_error = jobsErr.message
@@ -63,25 +73,23 @@ export async function POST(req: NextRequest) {
 
     log.jobs_source = process.env.ADZUNA_APP_ID ? 'adzuna' : 'none (configure ADZUNA_APP_ID)'
 
-    // --- DB2 alert email ---
-    if (jobs.length > 0) {
-      const db2Jobs = jobs.filter(
-        j =>
-          j.title?.toLowerCase().includes('db2') ||
-          (j.skills ?? []).some(s => s.toUpperCase() === 'DB2'),
-      )
-      if (db2Jobs.length > 0) {
-        await sendDb2JobsAlert(db2Jobs as unknown as import('@/types').Job[]).catch(() => {
-          log.email_error = 'DB2 alert failed (check RESEND_API_KEY)'
-        })
-        log.db2_alert_sent = db2Jobs.length
-      }
+    // --- DB2 alert email (NL + EU/Brazil) ---
+    const allDb2Jobs = allJobs.filter(
+      j =>
+        j.title?.toLowerCase().includes('db2') ||
+        (j.skills ?? []).some(s => s.toUpperCase() === 'DB2'),
+    )
+    if (allDb2Jobs.length > 0) {
+      await sendDb2JobsAlert(allDb2Jobs as unknown as import('@/types').Job[]).catch(() => {
+        log.email_error = 'DB2 alert failed (check RESEND_API_KEY)'
+      })
+      log.db2_alert_sent = allDb2Jobs.length
     }
 
     // --- Log ingestion run ---
     await supabase.from('ingestion_log').insert({
       source: 'all',
-      records_fetched: hnArticles.length + devtoArticles.length + jobs.length,
+      records_fetched: hnArticles.length + devtoArticles.length + allJobs.length,
       status: 'success',
     })
 

@@ -15,13 +15,33 @@ const SEARCH_ROLES = [
   'database administrator DB2',
 ]
 
+// DB2-specific terms for the Europe + Brazil search
+const DB2_TERMS = ['db2', 'IBM Db2', 'DB2 DBA', 'database administrator DB2']
+
+// Europe (NL excluded — covered by fetchNLJobs) + Brazil
+const DB2_COUNTRIES: Array<{ code: string; fallbackLocation: string; currency: string }> = [
+  { code: 'gb', fallbackLocation: 'United Kingdom', currency: 'GBP' },
+  { code: 'de', fallbackLocation: 'Germany',        currency: 'EUR' },
+  { code: 'fr', fallbackLocation: 'France',         currency: 'EUR' },
+  { code: 'pl', fallbackLocation: 'Poland',         currency: 'EUR' },
+  { code: 'es', fallbackLocation: 'Spain',          currency: 'EUR' },
+  { code: 'it', fallbackLocation: 'Italy',          currency: 'EUR' },
+  { code: 'at', fallbackLocation: 'Austria',        currency: 'EUR' },
+  { code: 'br', fallbackLocation: 'Brazil',         currency: 'BRL' },
+]
+
 export async function fetchNLJobs(): Promise<Omit<Job, 'id' | 'created_at'>[]> {
   const appId = process.env.ADZUNA_APP_ID
   const appKey = process.env.ADZUNA_APP_KEY
-
   if (!appId || !appKey) return []
-
   return fetchFromAdzuna(appId, appKey)
+}
+
+export async function fetchDB2EuropeJobs(): Promise<Omit<Job, 'id' | 'created_at'>[]> {
+  const appId = process.env.ADZUNA_APP_ID
+  const appKey = process.env.ADZUNA_APP_KEY
+  if (!appId || !appKey) return []
+  return fetchDB2FromCountries(appId, appKey)
 }
 
 async function fetchFromAdzuna(
@@ -47,9 +67,6 @@ async function fetchFromAdzuna(
       const data = await res.json()
 
       for (const job of data.results ?? []) {
-        // redirect_url is Adzuna's position-specific tracking link (preferred).
-        // Fall back to the canonical Adzuna detail page so there is always a
-        // job-level URL, never a company homepage.
         const applyUrl: string =
           job.redirect_url ??
           (job.id ? `https://www.adzuna.nl/jobs/details/${job.id}` : null) ??
@@ -79,6 +96,66 @@ async function fetchFromAdzuna(
       }
     } catch {
       // continue to next role on error
+    }
+  }
+
+  return results
+}
+
+async function fetchDB2FromCountries(
+  appId: string,
+  appKey: string,
+): Promise<Omit<Job, 'id' | 'created_at'>[]> {
+  const seen = new Set<string>()
+  const results: Omit<Job, 'id' | 'created_at'>[] = []
+
+  for (const country of DB2_COUNTRIES) {
+    for (const term of DB2_TERMS) {
+      try {
+        const url =
+          `https://api.adzuna.com/v1/api/jobs/${country.code}/search/1` +
+          `?app_id=${appId}&app_key=${appKey}` +
+          `&what=${encodeURIComponent(term)}` +
+          `&results_per_page=10` +
+          `&max_days_old=30` +
+          `&content-type=application/json`
+
+        const res = await fetch(url, { next: { revalidate: 0 } })
+        if (!res.ok) continue
+
+        const data = await res.json()
+
+        for (const job of data.results ?? []) {
+          const applyUrl: string =
+            job.redirect_url ??
+            (job.id ? `https://www.adzuna.${country.code}/jobs/details/${job.id}` : null) ??
+            ''
+
+          if (!applyUrl || seen.has(applyUrl)) continue
+          seen.add(applyUrl)
+
+          results.push({
+            title: job.title,
+            company: job.company?.display_name ?? 'Unknown',
+            location: job.location?.display_name ?? country.fallbackLocation,
+            job_type: inferJobType(job.contract_type, job.title),
+            salary_min: job.salary_min ?? null,
+            salary_max: job.salary_max ?? null,
+            currency: country.currency,
+            description: job.description?.slice(0, 500) ?? null,
+            skills: extractSkills(job.description ?? '', job.title ?? ''),
+            apply_url: applyUrl || null,
+            source: 'Adzuna-EU',
+            posted_at: job.created ?? new Date().toISOString(),
+            is_remote:
+              (job.title?.toLowerCase() ?? '').includes('remote') ||
+              (job.description?.toLowerCase() ?? '').includes('remote'),
+            seniority: detectSeniority(job.title ?? ''),
+          })
+        }
+      } catch {
+        // continue to next country/term on error
+      }
     }
   }
 
