@@ -29,10 +29,10 @@ const DB2_TERMS = [
   'DB2 database administrator',
 ]
 
-// Exclude from Adzuna API calls: mainframe / z/OS variants
-const MAINFRAME_EXCLUDE = 'mainframe zos'
+// Exclude from Adzuna API calls: mainframe / z/OS / COBOL variants
+const MAINFRAME_EXCLUDE = 'mainframe zos cobol'
 
-// Mainframe / z/OS signals — checked against title + description
+// Mainframe / z/OS / COBOL signals — checked against title + description
 const MAINFRAME_SIGNALS = [
   'mainframe',
   'z/os',
@@ -46,6 +46,7 @@ const MAINFRAME_SIGNALS = [
   'cics',
   'ibm z',
   'system z',
+  'cobol',
 ]
 
 function isMainframeJob(title: string, description: string): boolean {
