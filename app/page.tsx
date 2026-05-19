@@ -19,9 +19,15 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     supabase.from('articles').select('*', { count: 'exact' }).order('published_at', { ascending: false }).limit(6),
     supabase.from('articles').select('*').eq('is_featured', true).order('created_at', { ascending: false }).limit(1),
-    supabase.from('jobs').select('*', { count: 'exact' }).order('posted_at', { ascending: false }).limit(5),
+    supabase.from('jobs').select('*', { count: 'exact' }).eq('source', 'Adzuna').order('posted_at', { ascending: false }).limit(5),
     supabase.from('startups').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(3),
-    supabase.from('jobs').select('*', { count: 'exact' }).ilike('title', '%DB2%').order('posted_at', { ascending: false }),
+    supabase.from('jobs').select('*', { count: 'exact' })
+      .or('title.ilike.%DB2%,skills.cs.{DB2}')
+      .not('title', 'ilike', '%mainframe%')
+      .not('title', 'ilike', '%z/os%')
+      .not('title', 'ilike', '%zos%')
+      .not('title', 'ilike', '%cobol%')
+      .order('posted_at', { ascending: false }),
   ])
 
   const featured = featuredArticles?.[0] ?? null
