@@ -8,7 +8,7 @@ import { SeedReleasesButton } from '@/components/db2/SeedReleasesButton'
 export const revalidate = 3600
 
 interface Db2PageProps {
-  searchParams: Promise<{ seniority?: string; remote?: string }>
+  searchParams: Promise<{ seniority?: string; remote?: string; country?: string }>
 }
 
 const EDITIONS = [
@@ -57,10 +57,24 @@ const SENIORITY_OPTIONS = [
   { value: 'lead',   label: 'Lead' },
 ]
 
+const COUNTRY_OPTIONS = [
+  { value: 'all',            label: 'All Countries' },
+  { value: 'Netherlands',    label: 'Netherlands'   },
+  { value: 'United Kingdom', label: 'UK'            },
+  { value: 'Germany',        label: 'Germany'       },
+  { value: 'France',         label: 'France'        },
+  { value: 'Poland',         label: 'Poland'        },
+  { value: 'Spain',          label: 'Spain'         },
+  { value: 'Italy',          label: 'Italy'         },
+  { value: 'Austria',        label: 'Austria'       },
+  { value: 'Brazil',         label: 'Brazil'        },
+]
+
 export default async function Db2Page({ searchParams }: Db2PageProps) {
   const params = await searchParams
   const seniority = params.seniority ?? 'all'
   const remoteOnly = params.remote === 'true'
+  const country = params.country ?? 'all'
 
   const supabase = await createClient()
 
@@ -76,6 +90,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
 
   if (seniority !== 'all') jobsReq = jobsReq.eq('seniority', seniority)
   if (remoteOnly) jobsReq = jobsReq.eq('is_remote', true)
+  if (country !== 'all') jobsReq = jobsReq.ilike('location', `%${country}%`)
 
   const [
     { data: releases },
@@ -145,32 +160,51 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
           </div>
 
           {/* Filters */}
-          <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-            <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1 flex-shrink-0">
-              {SENIORITY_OPTIONS.map(({ value, label }) => (
+          <div className="flex flex-col gap-2 w-full lg:w-auto">
+            {/* Row 1: seniority + remote */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1 flex-shrink-0">
+                {SENIORITY_OPTIONS.map(({ value, label }) => (
+                  <a
+                    key={value}
+                    href={`/db2?seniority=${value}&remote=${remoteOnly}&country=${country}`}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+                      seniority === value
+                        ? 'bg-gradient-to-r from-[#006699] to-[#0099CC] text-white shadow-lg shadow-cyan-500/20'
+                        : 'text-[#6B6990] hover:text-[#A8A6CC]'
+                    }`}
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+              <a
+                href={`/db2?seniority=${seniority}&remote=${!remoteOnly}&country=${country}`}
+                className={`px-3 py-2 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
+                  remoteOnly
+                    ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25'
+                    : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
+                }`}
+              >
+                {remoteOnly ? '✓ ' : ''}Remote only
+              </a>
+            </div>
+            {/* Row 2: country */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+              {COUNTRY_OPTIONS.map(({ value, label }) => (
                 <a
                   key={value}
-                  href={`/db2?seniority=${value}${remoteOnly ? '&remote=true' : ''}`}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-                    seniority === value
-                      ? 'bg-gradient-to-r from-[#006699] to-[#0099CC] text-white shadow-lg shadow-cyan-500/20'
-                      : 'text-[#6B6990] hover:text-[#A8A6CC]'
+                  href={`/db2?seniority=${seniority}&remote=${remoteOnly}&country=${value}`}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
+                    country === value
+                      ? 'bg-[#006699]/20 text-[#4DB8FF] border-[#006699]/50'
+                      : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
                   }`}
                 >
                   {label}
                 </a>
               ))}
             </div>
-            <a
-              href={`/db2?seniority=${seniority}&remote=${!remoteOnly}`}
-              className={`px-3 py-2 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
-                remoteOnly
-                  ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25'
-                  : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
-              }`}
-            >
-              {remoteOnly ? '✓ ' : ''}Remote only
-            </a>
           </div>
         </div>
 
