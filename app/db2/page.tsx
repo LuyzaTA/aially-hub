@@ -68,6 +68,9 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
     .from('jobs')
     .select('*', { count: 'exact' })
     .or('title.ilike.%DB2%,skills.cs.{DB2}')
+    .not('title', 'ilike', '%mainframe%')
+    .not('title', 'ilike', '%z/os%')
+    .not('title', 'ilike', '%zos%')
     .order('posted_at', { ascending: false })
 
   if (seniority !== 'all') jobsReq = jobsReq.eq('seniority', seniority)

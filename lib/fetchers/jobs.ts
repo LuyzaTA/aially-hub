@@ -29,6 +29,30 @@ const DB2_TERMS = [
   'DB2 database administrator',
 ]
 
+// Exclude from Adzuna API calls: mainframe / z/OS variants
+const MAINFRAME_EXCLUDE = 'mainframe zos'
+
+// Mainframe / z/OS signals — checked against title + description
+const MAINFRAME_SIGNALS = [
+  'mainframe',
+  'z/os',
+  'zos',
+  'db2 z/os',
+  'db2/z',
+  'db2 for z',
+  'db2 390',
+  'db2 for mvs',
+  'mvs',
+  'cics',
+  'ibm z',
+  'system z',
+]
+
+function isMainframeJob(title: string, description: string): boolean {
+  const text = `${title} ${description}`.toLowerCase()
+  return MAINFRAME_SIGNALS.some(signal => text.includes(signal))
+}
+
 // Europe (NL excluded — covered by fetchNLJobs) + Brazil
 const DB2_COUNTRIES: Array<{ code: string; fallbackLocation: string; currency: string }> = [
   { code: 'gb', fallbackLocation: 'United Kingdom', currency: 'GBP' },
@@ -64,10 +88,12 @@ async function fetchFromAdzuna(
 
   for (const role of SEARCH_ROLES) {
     try {
+      const isDb2Role = role.toLowerCase().includes('db2')
       const url =
         `https://api.adzuna.com/v1/api/jobs/nl/search/1` +
         `?app_id=${appId}&app_key=${appKey}` +
         `&what=${encodeURIComponent(role)}` +
+        (isDb2Role ? `&what_exclude=${encodeURIComponent(MAINFRAME_EXCLUDE)}` : '') +
         `&results_per_page=10` +
         `&max_days_old=30` +
         `&content-type=application/json`
@@ -84,6 +110,10 @@ async function fetchFromAdzuna(
           ''
 
         if (!applyUrl || seen.has(applyUrl)) continue
+
+        // Skip mainframe / z/OS positions from DB2 searches
+        if (isDb2Role && isMainframeJob(job.title ?? '', job.description ?? '')) continue
+
         seen.add(applyUrl)
 
         results.push({
@@ -127,6 +157,7 @@ async function fetchDB2FromCountries(
           `https://api.adzuna.com/v1/api/jobs/${country.code}/search/1` +
           `?app_id=${appId}&app_key=${appKey}` +
           `&what=${encodeURIComponent(term)}` +
+          `&what_exclude=${encodeURIComponent(MAINFRAME_EXCLUDE)}` +
           `&results_per_page=10` +
           `&max_days_old=30` +
           `&content-type=application/json`
@@ -143,6 +174,10 @@ async function fetchDB2FromCountries(
             ''
 
           if (!applyUrl || seen.has(applyUrl)) continue
+
+          // Skip mainframe / z/OS positions
+          if (isMainframeJob(job.title ?? '', job.description ?? '')) continue
+
           seen.add(applyUrl)
 
           results.push({
