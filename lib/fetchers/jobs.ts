@@ -11,12 +11,23 @@ const SEARCH_ROLES = [
   'data platform engineer',
   'db2',
   'IBM Db2',
+  'DB2 LUW',
   'DB2 DBA',
+  'DBA DB2',
   'database administrator DB2',
+  'DB2 database administrator',
 ]
 
 // DB2-specific terms for the Europe + Brazil search
-const DB2_TERMS = ['db2', 'IBM Db2', 'DB2 DBA', 'database administrator DB2']
+const DB2_TERMS = [
+  'db2',
+  'IBM Db2',
+  'DB2 LUW',
+  'DB2 DBA',
+  'DBA DB2',
+  'database administrator DB2',
+  'DB2 database administrator',
+]
 
 // Europe (NL excluded — covered by fetchNLJobs) + Brazil
 const DB2_COUNTRIES: Array<{ code: string; fallbackLocation: string; currency: string }> = [
