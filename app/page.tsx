@@ -22,11 +22,15 @@ export default async function DashboardPage() {
     supabase.from('jobs').select('*', { count: 'exact' }).eq('source', 'Adzuna').order('posted_at', { ascending: false }).limit(5),
     supabase.from('startups').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(3),
     supabase.from('jobs').select('*', { count: 'exact' })
-      .ilike('title', '%DB2%')
+      .or('title.ilike.%DB2%,skills.cs.{DB2}')
+      .or('title.ilike.%dba%,title.ilike.%database adm%,title.ilike.%db admin%,title.ilike.%db2%')
       .not('title', 'ilike', '%mainframe%')
       .not('title', 'ilike', '%z/os%')
       .not('title', 'ilike', '%zos%')
       .not('title', 'ilike', '%cobol%')
+      .not('title', 'ilike', '%as400%')
+      .not('title', 'ilike', '%as/400%')
+      .not('title', 'ilike', '%iseries%')
       .order('posted_at', { ascending: false }),
   ])
 

@@ -56,16 +56,18 @@ function isMainframeJob(title: string, description: string): boolean {
   return MAINFRAME_SIGNALS.some(signal => text.includes(signal))
 }
 
-// DB2 DBA role signals — the title must contain "db2" AND one of these to be considered a focused DBA position
-const DB2_ROLE_SIGNALS = [
-  'dba', 'database admin', 'database administrator', 'db admin',
-  'luw', 'architect', 'engineer', 'specialist', 'consultant', 'administrator',
-]
+// Title signals that indicate a DBA/admin role regardless of whether "db2" is in the title
+const DBA_TITLE_SIGNALS = ['dba', 'database adm', 'database architect', 'db admin']
 
-function isDB2DBAFocused(title: string): boolean {
+function isDB2DBAFocused(title: string, description: string): boolean {
   const t = title.toLowerCase()
-  if (!t.includes('db2')) return false
-  return DB2_ROLE_SIGNALS.some(signal => t.includes(signal))
+  const combined = `${t} ${description.toLowerCase()}`
+  // DB2 must appear at least somewhere (title or description)
+  if (!combined.includes('db2')) return false
+  // Accept if title contains DB2 explicitly (e.g. "DB2 LUW Admin", "IBM Db2 Engineer")
+  if (t.includes('db2')) return true
+  // Or if title signals a DBA/admin role (e.g. "Database Administrator", "Senior DBA")
+  return DBA_TITLE_SIGNALS.some(signal => t.includes(signal))
 }
 
 // Europe (NL excluded — covered by fetchNLJobs) + Brazil
@@ -129,7 +131,7 @@ async function fetchFromAdzuna(
         // Skip mainframe / z/OS positions from DB2 searches
         if (isDb2Role && isMainframeJob(job.title ?? '', job.description ?? '')) continue
         // Skip non-DBA roles from DB2 searches (e.g. Java devs that mention DB2 as a skill)
-        if (isDb2Role && !isDB2DBAFocused(job.title ?? '')) continue
+        if (isDb2Role && !isDB2DBAFocused(job.title ?? '', job.description ?? '')) continue
 
         seen.add(applyUrl)
 
@@ -200,7 +202,7 @@ async function fetchDB2FromCountries(
           // Skip mainframe / z/OS positions
           if (isMainframeJob(job.title ?? '', job.description ?? '')) continue
           // Skip non-DBA roles (e.g. developers that only mention DB2 as a tool)
-          if (!isDB2DBAFocused(job.title ?? '')) continue
+          if (!isDB2DBAFocused(job.title ?? '', job.description ?? '')) continue
 
           seen.add(applyUrl)
 

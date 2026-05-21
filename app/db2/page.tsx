@@ -81,11 +81,15 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
   let jobsReq = supabase
     .from('jobs')
     .select('*', { count: 'exact' })
-    .ilike('title', '%DB2%')
+    .or('title.ilike.%DB2%,skills.cs.{DB2}')
+    .or('title.ilike.%dba%,title.ilike.%database adm%,title.ilike.%db admin%,title.ilike.%db2%')
     .not('title', 'ilike', '%mainframe%')
     .not('title', 'ilike', '%z/os%')
     .not('title', 'ilike', '%zos%')
     .not('title', 'ilike', '%cobol%')
+    .not('title', 'ilike', '%as400%')
+    .not('title', 'ilike', '%as/400%')
+    .not('title', 'ilike', '%iseries%')
     .order('posted_at', { ascending: false })
 
   if (seniority !== 'all') jobsReq = jobsReq.eq('seniority', seniority)
@@ -101,11 +105,15 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
     jobsReq,
     (() => {
       let q = supabase.from('jobs').select('location')
-        .ilike('title', '%DB2%')
+        .or('title.ilike.%DB2%,skills.cs.{DB2}')
+        .or('title.ilike.%dba%,title.ilike.%database adm%,title.ilike.%db admin%,title.ilike.%db2%')
         .not('title', 'ilike', '%mainframe%')
         .not('title', 'ilike', '%z/os%')
         .not('title', 'ilike', '%zos%')
         .not('title', 'ilike', '%cobol%')
+        .not('title', 'ilike', '%as400%')
+        .not('title', 'ilike', '%as/400%')
+        .not('title', 'ilike', '%iseries%')
       if (seniority !== 'all') q = q.eq('seniority', seniority)
       if (remoteOnly) q = q.eq('is_remote', true)
       return q
