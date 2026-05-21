@@ -222,7 +222,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
                       className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
                         active
                           ? 'bg-[#006699]/40 text-[#4DB8FF]'
-                          : 'bg-white/[0.06] text-[#3D3B60]'
+                          : 'bg-white/[0.10] text-[#A8A6CC]'
                       }`}
                     >
                       {n}
