@@ -99,12 +99,17 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
   ] = await Promise.all([
     supabase.from('db2_releases').select('*').order('release_date', { ascending: false }),
     jobsReq,
-    supabase.from('jobs').select('location')
-      .or('title.ilike.%DB2%,skills.cs.{DB2}')
-      .not('title', 'ilike', '%mainframe%')
-      .not('title', 'ilike', '%z/os%')
-      .not('title', 'ilike', '%zos%')
-      .not('title', 'ilike', '%cobol%'),
+    (() => {
+      let q = supabase.from('jobs').select('location')
+        .or('title.ilike.%DB2%,skills.cs.{DB2}')
+        .not('title', 'ilike', '%mainframe%')
+        .not('title', 'ilike', '%z/os%')
+        .not('title', 'ilike', '%zos%')
+        .not('title', 'ilike', '%cobol%')
+      if (seniority !== 'all') q = q.eq('seniority', seniority)
+      if (remoteOnly) q = q.eq('is_remote', true)
+      return q
+    })(),
   ])
 
   const latestFP = releases?.find(r => r.release_type === 'fixpack')
