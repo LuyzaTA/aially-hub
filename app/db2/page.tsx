@@ -95,13 +95,26 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
   const [
     { data: releases },
     { data: db2Jobs, count: db2Count },
+    { data: allDb2Locations },
   ] = await Promise.all([
     supabase.from('db2_releases').select('*').order('release_date', { ascending: false }),
     jobsReq,
+    supabase.from('jobs').select('location')
+      .or('title.ilike.%DB2%,skills.cs.{DB2}')
+      .not('title', 'ilike', '%mainframe%')
+      .not('title', 'ilike', '%z/os%')
+      .not('title', 'ilike', '%zos%')
+      .not('title', 'ilike', '%cobol%'),
   ])
 
   const latestFP = releases?.find(r => r.release_type === 'fixpack')
   const latestRelease = releases?.find(r => r.release_type === 'release')
+
+  const locations = allDb2Locations ?? []
+  const countForCountry = (value: string) =>
+    value === 'all'
+      ? locations.length
+      : locations.filter(j => j.location?.toLowerCase().includes(value.toLowerCase())).length
 
   return (
     <div>
@@ -191,19 +204,32 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
             </div>
             {/* Row 2: country */}
             <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
-              {COUNTRY_OPTIONS.map(({ value, label }) => (
-                <a
-                  key={value}
-                  href={`/db2?seniority=${seniority}&remote=${remoteOnly}&country=${value}`}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
-                    country === value
-                      ? 'bg-[#006699]/20 text-[#4DB8FF] border-[#006699]/50'
-                      : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
-                  }`}
-                >
-                  {label}
-                </a>
-              ))}
+              {COUNTRY_OPTIONS.map(({ value, label }) => {
+                const n = countForCountry(value)
+                const active = country === value
+                return (
+                  <a
+                    key={value}
+                    href={`/db2?seniority=${seniority}&remote=${remoteOnly}&country=${value}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium border transition-all whitespace-nowrap flex-shrink-0 ${
+                      active
+                        ? 'bg-[#006699]/20 text-[#4DB8FF] border-[#006699]/50'
+                        : 'bg-[#17153A] text-[#6B6990] border-white/[0.07] hover:text-[#A8A6CC]'
+                    }`}
+                  >
+                    {label}
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
+                        active
+                          ? 'bg-[#006699]/40 text-[#4DB8FF]'
+                          : 'bg-white/[0.06] text-[#3D3B60]'
+                      }`}
+                    >
+                      {n}
+                    </span>
+                  </a>
+                )
+              })}
             </div>
           </div>
         </div>
