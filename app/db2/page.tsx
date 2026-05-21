@@ -159,21 +159,21 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
 
       {/* Open DB2 positions */}
       <div className="mb-7">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#006699]/20 border border-[#006699]/40 flex items-center justify-center flex-shrink-0">
-              <span className="text-[#4DB8FF] text-[11px] font-bold">DB2</span>
-            </div>
-            <div>
-              <h2 className="text-[#EEEEFF] font-bold text-[16px] leading-none">Open DB2 Positions</h2>
-              <p className="text-[#6B6990] text-[11px] mt-0.5">
-                {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Europe &amp; Brazil · Direct apply links
-              </p>
-            </div>
+        {/* Title row */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-[#006699]/20 border border-[#006699]/40 flex items-center justify-center flex-shrink-0">
+            <span className="text-[#4DB8FF] text-[11px] font-bold">DB2</span>
           </div>
+          <div>
+            <h2 className="text-[#EEEEFF] font-bold text-[16px] leading-none">Open DB2 Positions</h2>
+            <p className="text-[#6B6990] text-[11px] mt-0.5">
+              {db2Count ?? 0} live role{(db2Count ?? 0) !== 1 ? 's' : ''} · Europe &amp; Brazil · Direct apply links
+            </p>
+          </div>
+        </div>
 
-          {/* Filters */}
-          <div className="flex flex-col gap-2 w-full lg:w-auto">
+        {/* Filters — full width so country row has room to scroll */}
+        <div className="flex flex-col gap-2 w-full mb-5">
             {/* Row 1: seniority + remote */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               <div className="flex gap-1 bg-[#17153A] border border-white/[0.07] rounded-2xl p-1 flex-shrink-0">
@@ -232,7 +232,6 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
               })}
             </div>
           </div>
-        </div>
 
         {(db2Jobs?.length ?? 0) === 0 ? (
           <div className="rounded-2xl bg-[#17153A] border border-white/[0.07] p-10 text-center">
