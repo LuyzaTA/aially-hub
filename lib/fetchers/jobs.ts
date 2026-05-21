@@ -9,8 +9,6 @@ const SEARCH_ROLES = [
   'MLOps engineer',
   'data scientist',
   'data platform engineer',
-  'db2',
-  'IBM Db2',
   'DB2 LUW',
   'DB2 DBA',
   'DBA DB2',
@@ -20,8 +18,6 @@ const SEARCH_ROLES = [
 
 // DB2-specific terms for the Europe + Brazil search
 const DB2_TERMS = [
-  'db2',
-  'IBM Db2',
   'DB2 LUW',
   'DB2 DBA',
   'DBA DB2',
@@ -52,6 +48,18 @@ const MAINFRAME_SIGNALS = [
 function isMainframeJob(title: string, description: string): boolean {
   const text = `${title} ${description}`.toLowerCase()
   return MAINFRAME_SIGNALS.some(signal => text.includes(signal))
+}
+
+// DB2 DBA role signals — the title must contain "db2" AND one of these to be considered a focused DBA position
+const DB2_ROLE_SIGNALS = [
+  'dba', 'database admin', 'database administrator', 'db admin',
+  'luw', 'architect', 'engineer', 'specialist', 'consultant', 'administrator',
+]
+
+function isDB2DBAFocused(title: string): boolean {
+  const t = title.toLowerCase()
+  if (!t.includes('db2')) return false
+  return DB2_ROLE_SIGNALS.some(signal => t.includes(signal))
 }
 
 // Europe (NL excluded — covered by fetchNLJobs) + Brazil
@@ -114,6 +122,8 @@ async function fetchFromAdzuna(
 
         // Skip mainframe / z/OS positions from DB2 searches
         if (isDb2Role && isMainframeJob(job.title ?? '', job.description ?? '')) continue
+        // Skip non-DBA roles from DB2 searches (e.g. Java devs that mention DB2 as a skill)
+        if (isDb2Role && !isDB2DBAFocused(job.title ?? '')) continue
 
         seen.add(applyUrl)
 
@@ -183,6 +193,8 @@ async function fetchDB2FromCountries(
 
           // Skip mainframe / z/OS positions
           if (isMainframeJob(job.title ?? '', job.description ?? '')) continue
+          // Skip non-DBA roles (e.g. developers that only mention DB2 as a tool)
+          if (!isDB2DBAFocused(job.title ?? '')) continue
 
           seen.add(applyUrl)
 

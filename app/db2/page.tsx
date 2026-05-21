@@ -81,7 +81,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
   let jobsReq = supabase
     .from('jobs')
     .select('*', { count: 'exact' })
-    .or('title.ilike.%DB2%,skills.cs.{DB2}')
+    .ilike('title', '%DB2%')
     .not('title', 'ilike', '%mainframe%')
     .not('title', 'ilike', '%z/os%')
     .not('title', 'ilike', '%zos%')
@@ -101,7 +101,7 @@ export default async function Db2Page({ searchParams }: Db2PageProps) {
     jobsReq,
     (() => {
       let q = supabase.from('jobs').select('location')
-        .or('title.ilike.%DB2%,skills.cs.{DB2}')
+        .ilike('title', '%DB2%')
         .not('title', 'ilike', '%mainframe%')
         .not('title', 'ilike', '%z/os%')
         .not('title', 'ilike', '%zos%')

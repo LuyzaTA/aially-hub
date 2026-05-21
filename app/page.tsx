@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     supabase.from('jobs').select('*', { count: 'exact' }).eq('source', 'Adzuna').order('posted_at', { ascending: false }).limit(5),
     supabase.from('startups').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(3),
     supabase.from('jobs').select('*', { count: 'exact' })
-      .or('title.ilike.%DB2%,skills.cs.{DB2}')
+      .ilike('title', '%DB2%')
       .not('title', 'ilike', '%mainframe%')
       .not('title', 'ilike', '%z/os%')
       .not('title', 'ilike', '%zos%')
