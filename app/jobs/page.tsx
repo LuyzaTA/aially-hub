@@ -22,11 +22,14 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 
   const supabase = await createClient()
 
+  // DB2 DBA roles are a separate concern surfaced exclusively on /db2
   let req = supabase
     .from('jobs')
     .select('*')
     .in('source', ['Adzuna', 'LinkedIn', 'Indeed'])
     .ilike('location', '%Netherlands%')
+    .not('title', 'ilike', '%db2%')
+    .not('title', 'ilike', '%dba%')
     .order('posted_at', { ascending: false })
     .limit(60)
 
@@ -40,6 +43,8 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     .select('*', { count: 'exact', head: true })
     .in('source', ['Adzuna', 'LinkedIn', 'Indeed'])
     .ilike('location', '%Netherlands%')
+    .not('title', 'ilike', '%db2%')
+    .not('title', 'ilike', '%dba%')
 
   return (
     <div>
