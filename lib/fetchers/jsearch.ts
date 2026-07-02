@@ -28,17 +28,20 @@ const COUNTRIES: Array<{ code: string; name: string; currency: string }> = [
 
 const DB2_ROLE_TERMS = SEARCH_ROLES.filter(role => role.toLowerCase().includes('db2'))
 
-// NL search is junior/traineeship-only for general roles; DB2 (DBA) search stays unrestricted.
-// Brazil keeps searching all roles at any seniority, unchanged.
+// General AI & Data roles are searched junior-only for both NL and Brazil; DB2 (DBA)
+// search stays unrestricted in both. Traineeship terms are NL-only.
 function queriesForCountry(countryCode: string): Array<{ term: string; isDb2: boolean }> {
+  const junior = NL_JUNIOR_ROLES.map(role => ({ term: `junior ${role}`, isDb2: false }))
+  const db2 = DB2_ROLE_TERMS.map(role => ({ term: role, isDb2: true }))
+
   if (countryCode === 'nl') {
     return [
-      ...NL_JUNIOR_ROLES.map(role => ({ term: `junior ${role}`, isDb2: false })),
+      ...junior,
       ...TRAINEESHIP_ROLES.map(role => ({ term: role, isDb2: false })),
-      ...DB2_ROLE_TERMS.map(role => ({ term: role, isDb2: true })),
+      ...db2,
     ]
   }
-  return SEARCH_ROLES.map(role => ({ term: role, isDb2: role.toLowerCase().includes('db2') }))
+  return [...junior, ...db2]
 }
 
 interface JSearchJob {
@@ -117,8 +120,8 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
         if (isDb2Role && isMainframeJob(title, description)) continue
         // Skip non-DBA roles from DB2 searches (e.g. Java devs that mention DB2 as a skill)
         if (isDb2Role && !isDB2DBAFocused(title, description)) continue
-        // NL general/traineeship searches: only keep results that actually read as junior/entry-level
-        if (country.code === 'nl' && !isDb2Role && detectSeniority(title) !== 'junior') continue
+        // General/traineeship searches: only keep results that actually read as junior/entry-level
+        if (!isDb2Role && detectSeniority(title) !== 'junior') continue
 
         const locationParts = [job.job_city, job.job_state].filter(Boolean)
         const location = locationParts.length > 0
