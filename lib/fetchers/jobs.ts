@@ -1,4 +1,7 @@
 import type { Job } from '@/types'
+import { mapWithConcurrency } from './concurrency'
+
+const CONCURRENCY = 6
 
 // Search terms for NL AI & Data Engineering positions
 export const SEARCH_ROLES = [
@@ -119,10 +122,8 @@ async function fetchFromAdzuna(
   appId: string,
   appKey: string,
 ): Promise<Omit<Job, 'id' | 'created_at'>[]> {
-  const seen = new Set<string>()
-  const results: Omit<Job, 'id' | 'created_at'>[] = []
-
-  for (const { query, kind } of NL_QUERIES) {
+  const perQuery = await mapWithConcurrency(NL_QUERIES, CONCURRENCY, async ({ query, kind }) => {
+    const out: Omit<Job, 'id' | 'created_at'>[] = []
     try {
       const isDb2Role = kind === 'db2'
       const url =
@@ -135,7 +136,7 @@ async function fetchFromAdzuna(
         `&content-type=application/json`
 
       const res = await fetch(url, { next: { revalidate: 0 } })
-      if (!res.ok) continue
+      if (!res.ok) return out
 
       const data = await res.json()
 
@@ -145,7 +146,7 @@ async function fetchFromAdzuna(
           (job.id ? `https://www.adzuna.nl/jobs/details/${job.id}` : null) ??
           ''
 
-        if (!applyUrl || seen.has(applyUrl)) continue
+        if (!applyUrl) continue
 
         // Skip mainframe / z/OS positions from DB2 searches
         if (isDb2Role && isMainframeJob(job.title ?? '', job.description ?? '')) continue
@@ -154,14 +155,12 @@ async function fetchFromAdzuna(
         // General/traineeship searches: only keep results that actually read as junior/entry-level
         if (!isDb2Role && detectSeniority(job.title ?? '') !== 'junior') continue
 
-        seen.add(applyUrl)
-
         const rawLocation = job.location?.display_name ?? 'Netherlands'
         const location = /netherlands|nederland/i.test(rawLocation)
           ? rawLocation
           : `${rawLocation}, Netherlands`
 
-        results.push({
+        out.push({
           title: job.title,
           company: job.company?.display_name ?? 'Unknown',
           location,
@@ -181,10 +180,18 @@ async function fetchFromAdzuna(
         })
       }
     } catch {
-      // continue to next role on error
+      // return whatever was collected before the error
     }
-  }
+    return out
+  })
 
+  const seen = new Set<string>()
+  const results: Omit<Job, 'id' | 'created_at'>[] = []
+  for (const job of perQuery.flat()) {
+    if (!job.apply_url || seen.has(job.apply_url)) continue
+    seen.add(job.apply_url)
+    results.push(job)
+  }
   return results
 }
 
@@ -192,71 +199,78 @@ async function fetchDB2FromCountries(
   appId: string,
   appKey: string,
 ): Promise<Omit<Job, 'id' | 'created_at'>[]> {
-  const seen = new Set<string>()
-  const results: Omit<Job, 'id' | 'created_at'>[] = []
-
+  const jobs: Array<{ country: typeof DB2_COUNTRIES[number]; term: string }> = []
   for (const country of DB2_COUNTRIES) {
-    for (const term of DB2_TERMS) {
-      try {
-        const url =
-          `https://api.adzuna.com/v1/api/jobs/${country.code}/search/1` +
-          `?app_id=${appId}&app_key=${appKey}` +
-          `&what=${encodeURIComponent(term)}` +
-          `&what_exclude=${encodeURIComponent(MAINFRAME_EXCLUDE)}` +
-          `&results_per_page=10` +
-          `&max_days_old=30` +
-          `&content-type=application/json`
-
-        const res = await fetch(url, { next: { revalidate: 0 } })
-        if (!res.ok) continue
-
-        const data = await res.json()
-
-        for (const job of data.results ?? []) {
-          const applyUrl: string =
-            job.redirect_url ??
-            (job.id ? `https://www.adzuna.${country.code}/jobs/details/${job.id}` : null) ??
-            ''
-
-          if (!applyUrl || seen.has(applyUrl)) continue
-
-          // Skip mainframe / z/OS positions
-          if (isMainframeJob(job.title ?? '', job.description ?? '')) continue
-          // Skip non-DBA roles (e.g. developers that only mention DB2 as a tool)
-          if (!isDB2DBAFocused(job.title ?? '', job.description ?? '')) continue
-
-          seen.add(applyUrl)
-
-          const rawLoc = job.location?.display_name ?? country.fallbackLocation
-          const loc = rawLoc.toLowerCase().includes(country.fallbackLocation.toLowerCase())
-            ? rawLoc
-            : `${rawLoc}, ${country.fallbackLocation}`
-
-          results.push({
-            title: job.title,
-            company: job.company?.display_name ?? 'Unknown',
-            location: loc,
-            job_type: inferJobType(job.contract_type, job.title),
-            salary_min: job.salary_min != null ? Math.round(job.salary_min) : null,
-            salary_max: job.salary_max != null ? Math.round(job.salary_max) : null,
-            currency: country.currency,
-            description: job.description?.slice(0, 500) ?? null,
-            skills: extractSkills(job.description ?? '', job.title ?? ''),
-            apply_url: applyUrl || null,
-            source: 'Adzuna-EU',
-            posted_at: job.created ?? new Date().toISOString(),
-            is_remote:
-              (job.title?.toLowerCase() ?? '').includes('remote') ||
-              (job.description?.toLowerCase() ?? '').includes('remote'),
-            seniority: detectSeniority(job.title ?? ''),
-          })
-        }
-      } catch {
-        // continue to next country/term on error
-      }
-    }
+    for (const term of DB2_TERMS) jobs.push({ country, term })
   }
 
+  const perQuery = await mapWithConcurrency(jobs, CONCURRENCY, async ({ country, term }) => {
+    const out: Omit<Job, 'id' | 'created_at'>[] = []
+    try {
+      const url =
+        `https://api.adzuna.com/v1/api/jobs/${country.code}/search/1` +
+        `?app_id=${appId}&app_key=${appKey}` +
+        `&what=${encodeURIComponent(term)}` +
+        `&what_exclude=${encodeURIComponent(MAINFRAME_EXCLUDE)}` +
+        `&results_per_page=10` +
+        `&max_days_old=30` +
+        `&content-type=application/json`
+
+      const res = await fetch(url, { next: { revalidate: 0 } })
+      if (!res.ok) return out
+
+      const data = await res.json()
+
+      for (const job of data.results ?? []) {
+        const applyUrl: string =
+          job.redirect_url ??
+          (job.id ? `https://www.adzuna.${country.code}/jobs/details/${job.id}` : null) ??
+          ''
+
+        if (!applyUrl) continue
+
+        // Skip mainframe / z/OS positions
+        if (isMainframeJob(job.title ?? '', job.description ?? '')) continue
+        // Skip non-DBA roles (e.g. developers that only mention DB2 as a tool)
+        if (!isDB2DBAFocused(job.title ?? '', job.description ?? '')) continue
+
+        const rawLoc = job.location?.display_name ?? country.fallbackLocation
+        const loc = rawLoc.toLowerCase().includes(country.fallbackLocation.toLowerCase())
+          ? rawLoc
+          : `${rawLoc}, ${country.fallbackLocation}`
+
+        out.push({
+          title: job.title,
+          company: job.company?.display_name ?? 'Unknown',
+          location: loc,
+          job_type: inferJobType(job.contract_type, job.title),
+          salary_min: job.salary_min != null ? Math.round(job.salary_min) : null,
+          salary_max: job.salary_max != null ? Math.round(job.salary_max) : null,
+          currency: country.currency,
+          description: job.description?.slice(0, 500) ?? null,
+          skills: extractSkills(job.description ?? '', job.title ?? ''),
+          apply_url: applyUrl || null,
+          source: 'Adzuna-EU',
+          posted_at: job.created ?? new Date().toISOString(),
+          is_remote:
+            (job.title?.toLowerCase() ?? '').includes('remote') ||
+            (job.description?.toLowerCase() ?? '').includes('remote'),
+          seniority: detectSeniority(job.title ?? ''),
+        })
+      }
+    } catch {
+      // return whatever was collected before the error
+    }
+    return out
+  })
+
+  const seen = new Set<string>()
+  const results: Omit<Job, 'id' | 'created_at'>[] = []
+  for (const job of perQuery.flat()) {
+    if (!job.apply_url || seen.has(job.apply_url)) continue
+    seen.add(job.apply_url)
+    results.push(job)
+  }
   return results
 }
 
