@@ -17,9 +17,20 @@ const CONCURRENCY = 10
 const REQUEST_TIMEOUT_MS = 10_000
 
 // JSearch (RapidAPI) aggregates listings sourced from LinkedIn, Indeed, Glassdoor,
-// ZipRecruiter, etc. We only keep results actually published on LinkedIn or Indeed,
-// since that's what this fetcher is meant to add on top of Adzuna.
-const KEPT_PUBLISHERS = ['linkedin', 'indeed']
+// JobLeads, ZipRecruiter, etc. NL sticks to LinkedIn/Indeed; Brazil's LinkedIn/Indeed
+// coverage is thin (~1-2 per 10 results), so Glassdoor/JobLeads are kept there too to
+// avoid the page going empty on days with weak LinkedIn/Indeed supply.
+const PUBLISHER_DISPLAY: Record<string, string> = {
+  linkedin: 'LinkedIn',
+  indeed: 'Indeed',
+  glassdoor: 'Glassdoor',
+  jobleads: 'JobLeads',
+}
+
+function keptPublishersForCountry(countryCode: string): string[] {
+  if (countryCode === 'nl') return ['linkedin', 'indeed']
+  return ['linkedin', 'indeed', 'glassdoor', 'jobleads']
+}
 
 const COUNTRIES: Array<{ code: string; name: string; currency: string }> = [
   { code: 'nl', name: 'Netherlands', currency: 'EUR' },
@@ -106,9 +117,10 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
 
       const data: JSearchResponse = await res.json()
 
+      const keptPublishers = keptPublishersForCountry(country.code)
       for (const job of data.data?.jobs ?? []) {
         const publisher = (job.job_publisher ?? '').toLowerCase()
-        if (!KEPT_PUBLISHERS.includes(publisher)) continue
+        if (!keptPublishers.includes(publisher)) continue
 
         const applyUrl = job.job_apply_link ?? ''
         if (!applyUrl) continue
@@ -139,7 +151,7 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
           description: description ? description.slice(0, 500) : null,
           skills: extractSkills(description, title),
           apply_url: applyUrl,
-          source: publisher === 'linkedin' ? 'LinkedIn' : 'Indeed',
+          source: PUBLISHER_DISPLAY[publisher] ?? job.job_publisher ?? 'Unknown',
           posted_at: job.job_posted_at_datetime_utc ?? new Date().toISOString(),
           is_remote: Boolean(job.job_is_remote),
           seniority: detectSeniority(title),

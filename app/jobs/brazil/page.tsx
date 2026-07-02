@@ -20,7 +20,7 @@ export default async function BrazilJobsPage({ searchParams }: BrazilJobsPagePro
   let req = supabase
     .from('jobs')
     .select('*')
-    .in('source', ['Adzuna-EU', 'LinkedIn', 'Indeed'])
+    .in('source', ['Adzuna-EU', 'LinkedIn', 'Indeed', 'Glassdoor', 'JobLeads'])
     .ilike('location', '%Brazil%')
     .not('title', 'ilike', '%db2%')
     .not('title', 'ilike', '%dba%')
@@ -34,7 +34,7 @@ export default async function BrazilJobsPage({ searchParams }: BrazilJobsPagePro
   const { count: totalCount } = await supabase
     .from('jobs')
     .select('*', { count: 'exact', head: true })
-    .in('source', ['Adzuna-EU', 'LinkedIn', 'Indeed'])
+    .in('source', ['Adzuna-EU', 'LinkedIn', 'Indeed', 'Glassdoor', 'JobLeads'])
     .ilike('location', '%Brazil%')
     .not('title', 'ilike', '%db2%')
     .not('title', 'ilike', '%dba%')

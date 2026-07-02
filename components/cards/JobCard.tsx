@@ -8,6 +8,7 @@ function sourceStyle(source: string): string {
     case 'linkedin':  return 'text-[#0A66C2] bg-[#0A66C2]/10 border-[#0A66C2]/25'
     case 'indeed':    return 'text-[#003A9B] bg-[#003A9B]/10 border-[#003A9B]/25'
     case 'glassdoor': return 'text-[#0CAA41] bg-[#0CAA41]/10 border-[#0CAA41]/25'
+    case 'jobleads':  return 'text-violet-400 bg-violet-400/10 border-violet-400/25'
     case 'wellfound': return 'text-orange-400 bg-orange-400/10 border-orange-400/25'
     case 'adzuna':    return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/25'
     default:          return 'text-[#6B6990] bg-white/5 border-white/10'
