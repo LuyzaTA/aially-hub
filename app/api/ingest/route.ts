@@ -3,6 +3,10 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { fetchHackerNews, fetchDevTo, fetchNLJobs, fetchDB2EuropeJobs, fetchJSearchJobs } from '@/lib/fetchers'
 import { sendDb2JobsAlert } from '@/lib/email'
 
+// Job fetchers now issue ~70+ sequential external requests (NL junior/traineeship
+// terms + DB2 Europe/Brazil + JSearch) — the platform default (10s) isn't enough.
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   // Optional: protect with a secret in production
   try {
