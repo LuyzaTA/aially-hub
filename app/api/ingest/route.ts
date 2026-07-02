@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { fetchHackerNews, fetchDevTo, fetchNLJobs, fetchDB2EuropeJobs } from '@/lib/fetchers'
+import { fetchHackerNews, fetchDevTo, fetchNLJobs, fetchDB2EuropeJobs, fetchJSearchJobs } from '@/lib/fetchers'
 import { sendDb2JobsAlert } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
@@ -45,14 +45,19 @@ export async function POST(req: NextRequest) {
       if (devtoErr) log.devto_error = devtoErr.message
     }
 
-    // --- NL Jobs + DB2 Europe/Brazil ---
-    const [nlJobs, db2EuJobs] = await Promise.all([fetchNLJobs(), fetchDB2EuropeJobs()])
+    // --- NL Jobs (Adzuna) + DB2 Europe/Brazil (Adzuna) + LinkedIn/Indeed NL+Brazil (JSearch) ---
+    const [nlJobs, db2EuJobs, jsearchJobs] = await Promise.all([
+      fetchNLJobs(),
+      fetchDB2EuropeJobs(),
+      fetchJSearchJobs(),
+    ])
     log.nl_jobs_fetched = nlJobs.length
     log.db2_eu_jobs_fetched = db2EuJobs.length
+    log.jsearch_jobs_fetched = jsearchJobs.length
 
-    // Deduplicate across both batches by apply_url
+    // Deduplicate across all batches by apply_url
     const seenUrls = new Set<string>()
-    const allJobs = [...nlJobs, ...db2EuJobs].filter(j => {
+    const allJobs = [...nlJobs, ...db2EuJobs, ...jsearchJobs].filter(j => {
       if (!j.apply_url || seenUrls.has(j.apply_url)) return false
       seenUrls.add(j.apply_url)
       return true
@@ -71,7 +76,12 @@ export async function POST(req: NextRequest) {
       if (jobsErr) log.jobs_error = jobsErr.message
     }
 
-    log.jobs_source = process.env.ADZUNA_APP_ID ? 'adzuna' : 'none (configure ADZUNA_APP_ID)'
+    const jobSources: string[] = []
+    if (process.env.ADZUNA_APP_ID) jobSources.push('adzuna')
+    if (process.env.RAPIDAPI_KEY) jobSources.push('jsearch (linkedin/indeed)')
+    log.jobs_source = jobSources.length > 0
+      ? jobSources.join(', ')
+      : 'none (configure ADZUNA_APP_ID and/or RAPIDAPI_KEY)'
 
     // --- DB2 alert email (NL + EU/Brazil) ---
     const allDb2Jobs = allJobs.filter(

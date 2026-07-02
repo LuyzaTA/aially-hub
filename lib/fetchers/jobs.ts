@@ -1,7 +1,7 @@
 import type { Job } from '@/types'
 
 // Search terms for NL AI & Data Engineering positions
-const SEARCH_ROLES = [
+export const SEARCH_ROLES = [
   'data engineer',
   'machine learning engineer',
   'AI engineer',
@@ -51,7 +51,7 @@ const MAINFRAME_SIGNALS = [
   'rpg',
 ]
 
-function isMainframeJob(title: string, description: string): boolean {
+export function isMainframeJob(title: string, description: string): boolean {
   const text = `${title} ${description}`.toLowerCase()
   return MAINFRAME_SIGNALS.some(signal => text.includes(signal))
 }
@@ -59,7 +59,7 @@ function isMainframeJob(title: string, description: string): boolean {
 // Title signals that indicate a DBA/admin role regardless of whether "db2" is in the title
 const DBA_TITLE_SIGNALS = ['dba', 'database adm', 'database architect', 'db admin']
 
-function isDB2DBAFocused(title: string, description: string): boolean {
+export function isDB2DBAFocused(title: string, description: string): boolean {
   const t = title.toLowerCase()
   const combined = `${t} ${description.toLowerCase()}`
   // DB2 must appear at least somewhere (title or description)
@@ -239,7 +239,7 @@ async function fetchDB2FromCountries(
   return results
 }
 
-function inferJobType(contractType: string | undefined, title: string): string {
+export function inferJobType(contractType: string | undefined, title: string): string {
   if (contractType === 'contract') return 'contract'
   if (contractType === 'part_time') return 'part-time'
   const t = (title ?? '').toLowerCase()
@@ -247,7 +247,7 @@ function inferJobType(contractType: string | undefined, title: string): string {
   return 'full-time'
 }
 
-function detectSeniority(title: string): string {
+export function detectSeniority(title: string): string {
   const t = title.toLowerCase()
   if (t.includes('junior') || t.includes('jr.') || t.includes('graduate') || t.includes('medior junior')) return 'junior'
   if (t.includes('lead') || t.includes('principal') || t.includes('head of') || t.includes('staff')) return 'lead'
@@ -263,7 +263,7 @@ const SKILL_KEYWORDS = [
   'fastapi', 'flink', 'hadoop', 'hive', 'power bi', 'tableau', 'looker',
 ]
 
-function extractSkills(description: string, title: string): string[] {
+export function extractSkills(description: string, title: string): string[] {
   const text = `${title} ${description}`.toLowerCase()
   return SKILL_KEYWORDS
     .filter(skill => text.includes(skill))
