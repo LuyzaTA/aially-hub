@@ -6,16 +6,17 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Newspaper, Briefcase,
-  Rocket, BarChart2, RefreshCw, Zap, Database,
+  Rocket, BarChart2, RefreshCw, Zap, Database, Globe2,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/',         label: 'Overview',  icon: LayoutDashboard, color: '#6366F1' },
-  { href: '/news',     label: 'News Feed', icon: Newspaper,       color: '#22D3EE' },
-  { href: '/jobs',     label: 'NL Jobs',   icon: Briefcase,       color: '#22C55E' },
-  { href: '/startups', label: 'Startups',  icon: Rocket,          color: '#F97316' },
-  { href: '/market',   label: 'Market',    icon: BarChart2,       color: '#A855F7' },
-  { href: '/db2',      label: 'DB2 LUW',   icon: Database,        color: '#00CFFF' },
+  { href: '/',            label: 'Overview',     icon: LayoutDashboard, color: '#6366F1' },
+  { href: '/news',        label: 'News Feed',    icon: Newspaper,       color: '#22D3EE' },
+  { href: '/jobs',        label: 'NL Jobs',      icon: Briefcase,       color: '#22C55E' },
+  { href: '/jobs/brazil', label: 'Brazil Jobs',  icon: Globe2,          color: '#FBBF24' },
+  { href: '/startups',    label: 'Startups',     icon: Rocket,          color: '#F97316' },
+  { href: '/market',      label: 'Market',       icon: BarChart2,       color: '#A855F7' },
+  { href: '/db2',         label: 'DB2 LUW',      icon: Database,        color: '#00CFFF' },
 ]
 
 const BARS = [32, 55, 40, 70, 52, 80, 62, 88, 68, 95]
@@ -109,7 +110,7 @@ export function Sidebar() {
         <nav className="flex-1 px-3 overflow-y-auto">
           <div className="space-y-0.5">
             {navItems.map(({ href, label, icon: Icon, color }) => {
-              const active = pathname === href || (href !== '/' && pathname.startsWith(href))
+              const active = pathname === href || (href !== '/' && pathname.startsWith(`${href}/`))
               return (
                 <Link
                   key={href}
@@ -272,7 +273,7 @@ export function Sidebar() {
                 className="relative z-10 text-[9px] font-mono tracking-wide transition-colors duration-200 leading-none"
                 style={{ color: active ? color : '#3A3860' }}
               >
-                {label === 'News Feed' ? 'News' : label === 'Overview' ? 'Home' : label}
+                {label === 'News Feed' ? 'News' : label === 'Overview' ? 'Home' : label === 'Brazil Jobs' ? 'Brazil' : label}
               </span>
             </Link>
           )
