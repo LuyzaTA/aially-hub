@@ -16,6 +16,18 @@ export const SEARCH_ROLES = [
   'DB2 database administrator',
 ]
 
+// Non-DB2 AI & Data Engineering roles — the NL search targets junior/entry-level only
+export const NL_JUNIOR_ROLES = SEARCH_ROLES.filter(role => !role.toLowerCase().includes('db2'))
+
+// Traineeship terms for the NL search
+export const TRAINEESHIP_ROLES = [
+  'Traineeship Data',
+  'Traineeship Data Science',
+  'Traineeship Data Engineering',
+  'Traineeship AI',
+  'Traineeship Data Analyst',
+]
+
 // DB2-specific terms for the Europe + Brazil search
 const DB2_TERMS = [
   'DB2 LUW',
@@ -96,6 +108,13 @@ export async function fetchDB2EuropeJobs(): Promise<Omit<Job, 'id' | 'created_at
   return fetchDB2FromCountries(appId, appKey)
 }
 
+// General NL roles are searched junior-only; traineeships are added as-is; DB2 (DBA) search is untouched
+const NL_QUERIES: Array<{ query: string; kind: 'general' | 'traineeship' | 'db2' }> = [
+  ...NL_JUNIOR_ROLES.map(role => ({ query: `junior ${role}`, kind: 'general' as const })),
+  ...TRAINEESHIP_ROLES.map(role => ({ query: role, kind: 'traineeship' as const })),
+  ...SEARCH_ROLES.filter(role => role.toLowerCase().includes('db2')).map(role => ({ query: role, kind: 'db2' as const })),
+]
+
 async function fetchFromAdzuna(
   appId: string,
   appKey: string,
@@ -103,13 +122,13 @@ async function fetchFromAdzuna(
   const seen = new Set<string>()
   const results: Omit<Job, 'id' | 'created_at'>[] = []
 
-  for (const role of SEARCH_ROLES) {
+  for (const { query, kind } of NL_QUERIES) {
     try {
-      const isDb2Role = role.toLowerCase().includes('db2')
+      const isDb2Role = kind === 'db2'
       const url =
         `https://api.adzuna.com/v1/api/jobs/nl/search/1` +
         `?app_id=${appId}&app_key=${appKey}` +
-        `&what=${encodeURIComponent(role)}` +
+        `&what=${encodeURIComponent(query)}` +
         (isDb2Role ? `&what_exclude=${encodeURIComponent(MAINFRAME_EXCLUDE)}` : '') +
         `&results_per_page=10` +
         `&max_days_old=30` +
@@ -132,6 +151,8 @@ async function fetchFromAdzuna(
         if (isDb2Role && isMainframeJob(job.title ?? '', job.description ?? '')) continue
         // Skip non-DBA roles from DB2 searches (e.g. Java devs that mention DB2 as a skill)
         if (isDb2Role && !isDB2DBAFocused(job.title ?? '', job.description ?? '')) continue
+        // General/traineeship searches: only keep results that actually read as junior/entry-level
+        if (!isDb2Role && detectSeniority(job.title ?? '') !== 'junior') continue
 
         seen.add(applyUrl)
 
@@ -249,7 +270,10 @@ export function inferJobType(contractType: string | undefined, title: string): s
 
 export function detectSeniority(title: string): string {
   const t = title.toLowerCase()
-  if (t.includes('junior') || t.includes('jr.') || t.includes('graduate') || t.includes('medior junior')) return 'junior'
+  if (
+    t.includes('junior') || t.includes('jr.') || t.includes('graduate') || t.includes('medior junior') ||
+    t.includes('trainee') || t.includes('traineeship') || t.includes('intern') || t.includes('internship')
+  ) return 'junior'
   if (t.includes('lead') || t.includes('principal') || t.includes('head of') || t.includes('staff')) return 'lead'
   if (t.includes('senior') || t.includes('sr.') || t.includes('medior senior')) return 'senior'
   return 'mid'

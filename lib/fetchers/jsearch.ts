@@ -1,6 +1,8 @@
 import type { Job } from '@/types'
 import {
   SEARCH_ROLES,
+  NL_JUNIOR_ROLES,
+  TRAINEESHIP_ROLES,
   isMainframeJob,
   isDB2DBAFocused,
   inferJobType,
@@ -17,6 +19,21 @@ const COUNTRIES: Array<{ code: string; name: string; currency: string }> = [
   { code: 'nl', name: 'Netherlands', currency: 'EUR' },
   { code: 'br', name: 'Brazil', currency: 'BRL' },
 ]
+
+const DB2_ROLE_TERMS = SEARCH_ROLES.filter(role => role.toLowerCase().includes('db2'))
+
+// NL search is junior/traineeship-only for general roles; DB2 (DBA) search stays unrestricted.
+// Brazil keeps searching all roles at any seniority, unchanged.
+function queriesForCountry(countryCode: string): Array<{ term: string; isDb2: boolean }> {
+  if (countryCode === 'nl') {
+    return [
+      ...NL_JUNIOR_ROLES.map(role => ({ term: `junior ${role}`, isDb2: false })),
+      ...TRAINEESHIP_ROLES.map(role => ({ term: role, isDb2: false })),
+      ...DB2_ROLE_TERMS.map(role => ({ term: role, isDb2: true })),
+    ]
+  }
+  return SEARCH_ROLES.map(role => ({ term: role, isDb2: role.toLowerCase().includes('db2') }))
+}
 
 interface JSearchJob {
   job_title?: string
@@ -56,10 +73,9 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
   const results: Omit<Job, 'id' | 'created_at'>[] = []
 
   for (const country of COUNTRIES) {
-    for (const role of SEARCH_ROLES) {
+    for (const { term, isDb2: isDb2Role } of queriesForCountry(country.code)) {
       try {
-        const isDb2Role = role.toLowerCase().includes('db2')
-        const query = `${role} in ${country.name}`
+        const query = `${term} in ${country.name}`
         const url =
           `https://jsearch.p.rapidapi.com/search-v2` +
           `?query=${encodeURIComponent(query)}` +
@@ -90,6 +106,8 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
           if (isDb2Role && isMainframeJob(title, description)) continue
           // Skip non-DBA roles from DB2 searches (e.g. Java devs that mention DB2 as a skill)
           if (isDb2Role && !isDB2DBAFocused(title, description)) continue
+          // NL general/traineeship searches: only keep results that actually read as junior/entry-level
+          if (country.code === 'nl' && !isDb2Role && detectSeniority(title) !== 'junior') continue
 
           seen.add(applyUrl)
 
