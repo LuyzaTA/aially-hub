@@ -13,6 +13,7 @@ export const SEARCH_ROLES = [
   'MLOps engineer',
   'data scientist',
   'data platform engineer',
+  'Azure Cloud',
   'DB2 LUW',
   'DB2 DBA',
   'DBA DB2',
