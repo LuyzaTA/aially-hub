@@ -3,13 +3,11 @@ import { JobCard } from '@/components/cards/JobCard'
 
 export const revalidate = 3600
 
+// General roles are searched junior-only (DB2 DBA search is unrestricted but is a
+// separate concern surfaced on /db2), so Mid/Senior/Lead/Principal aren't offered here.
 const seniorityOptions = [
-  { value: 'all',       label: 'All Levels' },
-  { value: 'junior',    label: 'Junior' },
-  { value: 'mid',       label: 'Mid' },
-  { value: 'senior',    label: 'Senior' },
-  { value: 'lead',      label: 'Lead' },
-  { value: 'principal', label: 'Principal' },
+  { value: 'all',    label: 'All Levels' },
+  { value: 'junior', label: 'Junior' },
 ]
 
 interface JobsPageProps {
