@@ -11,7 +11,10 @@ import {
 } from './jobs'
 import { mapWithConcurrency } from './concurrency'
 
-const CONCURRENCY = 6
+// JSearch (~4s/request, backed by live scraping) is much slower than Adzuna — higher
+// concurrency and a hard per-request timeout keep the whole run inside the function budget
+const CONCURRENCY = 10
+const REQUEST_TIMEOUT_MS = 10_000
 
 // JSearch (RapidAPI) aggregates listings sourced from LinkedIn, Indeed, Glassdoor,
 // ZipRecruiter, etc. We only keep results actually published on LinkedIn or Indeed,
@@ -94,6 +97,7 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
           'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
         },
         next: { revalidate: 0 },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       })
       if (!res.ok) return out
 

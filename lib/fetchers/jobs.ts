@@ -1,7 +1,8 @@
 import type { Job } from '@/types'
 import { mapWithConcurrency } from './concurrency'
 
-const CONCURRENCY = 6
+const CONCURRENCY = 10
+const REQUEST_TIMEOUT_MS = 8_000
 
 // Search terms for NL AI & Data Engineering positions
 export const SEARCH_ROLES = [
@@ -135,7 +136,7 @@ async function fetchFromAdzuna(
         `&max_days_old=30` +
         `&content-type=application/json`
 
-      const res = await fetch(url, { next: { revalidate: 0 } })
+      const res = await fetch(url, { next: { revalidate: 0 }, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
       if (!res.ok) return out
 
       const data = await res.json()
@@ -216,7 +217,7 @@ async function fetchDB2FromCountries(
         `&max_days_old=30` +
         `&content-type=application/json`
 
-      const res = await fetch(url, { next: { revalidate: 0 } })
+      const res = await fetch(url, { next: { revalidate: 0 }, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
       if (!res.ok) return out
 
       const data = await res.json()
