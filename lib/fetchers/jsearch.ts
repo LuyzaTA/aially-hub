@@ -22,7 +22,7 @@ interface JSearchJob {
   job_title?: string
   employer_name?: string
   job_publisher?: string
-  job_employment_type?: string
+  job_employment_types?: string[]
   job_apply_link?: string
   job_description?: string
   job_is_remote?: boolean
@@ -36,12 +36,12 @@ interface JSearchJob {
 }
 
 interface JSearchResponse {
-  data?: JSearchJob[]
+  data?: { jobs?: JSearchJob[] }
 }
 
-// Maps JSearch's employment_type enum onto the contract_type values inferJobType() expects
-function normalizeEmploymentType(jsearchType: string | undefined): string | undefined {
-  switch (jsearchType) {
+// Maps JSearch's employment_types enum onto the contract_type values inferJobType() expects
+function normalizeEmploymentType(jsearchTypes: string[] | undefined): string | undefined {
+  switch (jsearchTypes?.[0]) {
     case 'PARTTIME': return 'part_time'
     case 'CONTRACTOR': return 'contract'
     default: return undefined
@@ -61,7 +61,7 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
         const isDb2Role = role.toLowerCase().includes('db2')
         const query = `${role} in ${country.name}`
         const url =
-          `https://jsearch.p.rapidapi.com/search` +
+          `https://jsearch.p.rapidapi.com/search-v2` +
           `?query=${encodeURIComponent(query)}` +
           `&page=1&num_pages=1&date_posted=month&country=${country.code}`
 
@@ -76,7 +76,7 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
 
         const data: JSearchResponse = await res.json()
 
-        for (const job of data.data ?? []) {
+        for (const job of data.data?.jobs ?? []) {
           const publisher = (job.job_publisher ?? '').toLowerCase()
           if (!KEPT_PUBLISHERS.includes(publisher)) continue
 
@@ -102,7 +102,7 @@ export async function fetchJSearchJobs(): Promise<Omit<Job, 'id' | 'created_at'>
             title,
             company: job.employer_name ?? 'Unknown',
             location,
-            job_type: inferJobType(normalizeEmploymentType(job.job_employment_type), title),
+            job_type: inferJobType(normalizeEmploymentType(job.job_employment_types), title),
             salary_min: job.job_min_salary != null ? Math.round(job.job_min_salary) : null,
             salary_max: job.job_max_salary != null ? Math.round(job.job_max_salary) : null,
             currency: job.job_salary_currency ?? country.currency,
